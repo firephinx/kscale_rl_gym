@@ -34,7 +34,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         num_actions = 20
 
     class commands(LeggedRobotCfg.commands):
-        curriculum = True
+        curriculum = False
         max_curriculum = 1.
         num_commands = 3 # default: lin_vel_x, lin_vel_y, ang_vel_yaw
         resampling_time = 10. # time before command are changed[s]
@@ -87,10 +87,11 @@ class KBotRoughCfg( LeggedRobotCfg ):
         decimation = 4
 
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless/robot/robot.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot.urdf'
         name = "kbot"
         foot_name = 'LEG_FOOT'
-        penalize_contacts_on = []
+        imu_name = "imu"
+        penalize_contacts_on = ["knee", "hip"]
         terminate_after_contacts_on = ["base"]
         self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
         flip_visual_attachments = False
@@ -99,6 +100,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
         only_positive_rewards = False
+
+        max_contact_force = 400  # forces above this value are penalized
 
         class scales( LeggedRobotCfg.rewards.scales ):
             tracking_lin_vel = 10.0
@@ -110,6 +113,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_acc = -2.5e-7
             dof_vel = -1e-3
             feet_air_time = 0.0
+            torques = -0.00001
             collision = 0.0
             action_rate = -0.01
             dof_pos_limits = -5.0
@@ -118,6 +122,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             contact_no_vel = -2.0
             feet_swing_height = -10.0 #-0.2
             contact = 1.8
+            feet_contact_forces = -0.01
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:

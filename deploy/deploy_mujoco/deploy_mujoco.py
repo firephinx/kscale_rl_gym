@@ -84,7 +84,6 @@ if __name__ == "__main__":
         start = time.time()
         while viewer.is_running() and time.time() - start < simulation_duration:
             step_start = time.time()
-            print(d.qpos)
             tau = pd_control(target_dof_pos, d.qpos[7:], kps, np.zeros_like(kds), d.qvel[6:], kds)
             d.ctrl[:] = tau
             # mj_step can be replaced with code that also evaluates
@@ -100,8 +99,6 @@ if __name__ == "__main__":
                 dqj = d.qvel[6:]
                 quat = d.qpos[3:7]
                 omega = d.qvel[3:6]
-
-                
 
                 qj = (qj - default_angles) * dof_pos_scale
                 remapped_qj = np.concatenate((qj[15:],qj[5:15],qj[:5]))
@@ -129,10 +126,6 @@ if __name__ == "__main__":
                 action = policy(obs_tensor).detach().numpy().squeeze()
 
                 remapped_actions = np.concatenate((action[15:],action[5:15],action[:5]))
-                #print(action)
-                # transform action to target_dof_pos
-                #target_dof_pos = action * action_scale + default_angles
-                #target_dof_pos = action * action_scale 
                 target_dof_pos = remapped_actions * action_scale + default_angles
 
             # Pick up changes to the physics state, apply perturbations, update options from GUI.

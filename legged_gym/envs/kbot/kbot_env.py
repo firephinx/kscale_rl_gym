@@ -120,3 +120,13 @@ class KBot(LeggedRobot):
         print(self.dof_pos[:,[2,3,6,7]])
         return torch.sum(torch.square(self.dof_pos[:,[2,3,6,7]]), dim=1)
     
+    def _reward_feet_contact_forces(self):
+        """Calculates the reward for keeping contact forces within a specified range. Penalizes
+        high contact forces on the feet.
+        """
+        return torch.sum(
+            (
+                torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) - self.cfg.rewards.max_contact_force
+            ).clip(0, 400),
+            dim=1,
+        )

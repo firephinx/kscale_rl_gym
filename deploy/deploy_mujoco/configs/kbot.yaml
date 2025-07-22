@@ -1,6 +1,6 @@
 # 
 policy_path: "{LEGGED_GYM_ROOT_DIR}/logs/kbot/exported/policies/policy_lstm_1.pt"
-xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless/robot/scene.xml"
+xml_path: "{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/scene.xml"
 
 # Total simulation time
 simulation_duration: 60.0

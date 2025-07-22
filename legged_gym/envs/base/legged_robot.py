@@ -92,10 +92,17 @@ class LeggedRobot(BaseTask):
 
         # prepare quantities
         self.base_pos[:] = self.root_states[:, 0:3]
-        self.base_quat[:] = self.root_states[:, 3:7]
+        
+        if self.imu_indices:
+            self.base_quat = self.rigid_state[:, self.imu_indices, 3:7]
+            self.base_lin_vel[:] = quat_rotate_inverse(self.base_quat, self.rigid_state[:, self.imu_indices, 7:10])
+            self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.rigid_state[:, self.imu_indices, 10:13])
+        else:
+            self.base_quat = self.root_states[:, 3:7]
+            self.base_lin_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
+            self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
+
         self.rpy[:] = get_euler_xyz_in_tensor(self.base_quat[:])
-        self.base_lin_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
-        self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
         self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec)
 
         self._post_physics_step_callback()
@@ -159,6 +166,14 @@ class LeggedRobot(BaseTask):
         # send timeout info to the algorithm
         if self.cfg.env.send_timeouts:
             self.extras["time_outs"] = self.time_out_buf
+
+        if self.imu_indices:
+            self.base_quat[env_ids] = self.rigid_state[env_ids, self.imu_indices, 3:7]
+        else:
+            self.base_quat[env_ids] = self.root_states[env_ids, 3:7]
+
+        self.rpy[env_ids] = get_euler_xyz_in_tensor(self.base_quat[env_ids])
+        self.projected_gravity[env_ids] = quat_rotate_inverse(self.base_quat[env_ids], self.gravity_vec[env_ids])
     
     def compute_reward(self):
         """ Compute rewards
@@ -436,7 +451,10 @@ class LeggedRobot(BaseTask):
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.dof_pos = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 0]
         self.dof_vel = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 1]
-        self.base_quat = self.root_states[:, 3:7]
+        if self.imu_indices:
+            self.base_quat = self.rigid_state[:, self.imu_indices, 3:7]
+        else:
+            self.base_quat = self.root_states[:, 3:7]
         self.rpy = get_euler_xyz_in_tensor(self.base_quat)
         self.base_pos = self.root_states[:self.num_envs, 0:3]
         self.contact_forces = gymtorch.wrap_tensor(net_contact_forces).view(self.num_envs, -1, 3) # shape: num_envs, num_bodies, xyz axis
@@ -458,8 +476,12 @@ class LeggedRobot(BaseTask):
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel], device=self.device, requires_grad=False,) # TODO change this
         self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
         self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices), dtype=torch.bool, device=self.device, requires_grad=False)
-        self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
-        self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
+        if self.imu_indices:
+            self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.rigid_state[:, self.imu_indices, 7:10])
+            self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.rigid_state[:, self.imu_indices, 10:13])
+        else:
+            self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
+            self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
         self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
       
 
@@ -553,10 +575,8 @@ class LeggedRobot(BaseTask):
 
         # save body names from the asset
         body_names = self.gym.get_asset_rigid_body_names(robot_asset)
-        print(body_names)
         self.dof_names = self.gym.get_asset_dof_names(robot_asset)
         self.num_bodies = len(body_names)
-        print(self.dof_names)
         self.num_dofs = len(self.dof_names)
         feet_names = [s for s in body_names if self.cfg.asset.foot_name in s]
         penalized_contact_names = []
@@ -597,6 +617,13 @@ class LeggedRobot(BaseTask):
         self.feet_indices = torch.zeros(len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], feet_names[i])
+
+        self.imu_indices = self.gym.find_actor_rigid_body_handle(
+            self.envs[0], self.actor_handles[0], self.cfg.asset.imu_name
+        )
+        if self.imu_indices == -1:
+            self.imu_indices = None
+            print(f"Warning: IMU {self.cfg.asset.imu_name} not found in the asset. Defaulting to base link.")
 
         self.penalised_contact_indices = torch.zeros(len(penalized_contact_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(penalized_contact_names)):
