@@ -1,0 +1,248 @@
+<mujoco model="[urdf]_v3.2.1_w_battery">
+  <default>
+    <default class="robot">
+      <default class="feetech_sts3215_12v">
+        <joint armature="0.039999999991812" frictionloss="0.16197241014297026" damping="1.2305092028680242" actuatorfrcrange="-5.466091040935576 5.466091040935576" />
+        <motor ctrlrange="-5.466091040935576 5.466091040935576" />
+      </default>
+      <default class="feetech_sts3250">
+        <joint armature="0.03999977737144798" frictionloss="0.19999504581400715" damping="1.3464038511725651" actuatorfrcrange="-8.716130441407099 8.716130441407099" />
+        <motor ctrlrange="-8.716130441407099 8.716130441407099" />
+      </default>
+      <default class="visual">
+        <geom material="visualgeom" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="collision">
+        <geom material="collision_material" condim="3" contype="0" conaffinity="1" priority="1" group="1" solref="0.005 1" friction="0.55" />
+        <equality solimp="0.99 0.999 1e-05" solref="0.005 1" />
+      </default>
+    </default>
+    <mesh maxhullvert="64" />
+  </default>
+
+  <compiler angle="radian" />
+
+  <asset>
+    <material name="base_material" rgba="1 0 0 1" />
+    <material name="Hip_Upper_Bracket_material" rgba="0.498039 0.498039 0.498039 1" />
+    <material name="Upper_Servo_Hip_Bracket_material" rgba="0.615686 0.811765 0.929412 1" />
+    <material name="imu_material" rgba="0 1 0 1" />
+    <material name="1910_0025_0816_REV1_1_material" rgba="0.647059 0.647059 0.647059 1" />
+    <material name="Right_Hip_Roll_STS3250_material" rgba="0.513725 0.415686 0.733333 1" />
+    <material name="Left_Shoulder_Roll_STS3250_material" rgba="0.913725 0.647059 0.329412 1" />
+    <material name="Upper_Leg_material" rgba="0.980392 0.713725 0.003922 1" />
+    <material name="Gripper_Static_1_material" rgba="0.768627 0.886275 0.952941 1" />
+    <material name="Gripper_Dynamic_1_material" rgba="0.972549 0.529412 0.003922 1" />
+    <material name="Right_Foot_material" rgba="0.917647 0.917647 0.917647 1" />
+    <material name="default_material" rgba="0.7 0.7 0.7 1" />
+    <material name="collision_material" rgba="1.0 0.28 0.1 0.9" />
+    <mesh name="Hip_Upper_Bracket.stl" file="meshes/Hip_Upper_Bracket.stl" />
+    <mesh name="Upper_Servo_Hip_Bracket.stl" file="meshes/Upper_Servo_Hip_Bracket.stl" />
+    <mesh name="Right_Hip_Roll_STS3250.stl" file="meshes/Right_Hip_Roll_STS3250.stl" />
+    <mesh name="Upper_Leg.stl" file="meshes/Upper_Leg.stl" />
+    <mesh name="Right_Knee_Pitch_STS3250.stl" file="meshes/Right_Knee_Pitch_STS3250.stl" />
+    <mesh name="Right_Ankle_Pitch_STS3250.stl" file="meshes/Right_Ankle_Pitch_STS3250.stl" />
+    <mesh name="Right_Foot_Bracket.stl" file="meshes/Right_Foot_Bracket.stl" />
+    <mesh name="Right_Foot.collision.stl" file="meshes/Right_Foot.collision.stl" />
+    <mesh name="Right_Foot.stl" file="meshes/Right_Foot.stl" />
+    <mesh name="Upper_Servo_Hip_Bracket_1.stl" file="meshes/Upper_Servo_Hip_Bracket_1.stl" />
+    <mesh name="Left_Hip_Roll_STS3250.stl" file="meshes/Left_Hip_Roll_STS3250.stl" />
+    <mesh name="Upper_Leg_1.stl" file="meshes/Upper_Leg_1.stl" />
+    <mesh name="Left_Knee_Pitch_STS3250.stl" file="meshes/Left_Knee_Pitch_STS3250.stl" />
+    <mesh name="Left_Ankle_Pitch_STS3250.stl" file="meshes/Left_Ankle_Pitch_STS3250.stl" />
+    <mesh name="Left_Foot_Bracket.stl" file="meshes/Left_Foot_Bracket.stl" />
+    <mesh name="Left_Foot.collision.stl" file="meshes/Left_Foot.collision.stl" />
+    <mesh name="Left_Foot.stl" file="meshes/Left_Foot.stl" />
+    <mesh name="imu.stl" file="meshes/imu.stl" />
+    <mesh name="1910_0025_0816_REV1_1.stl" file="meshes/1910_0025_0816_REV1_1.stl" />
+    <mesh name="Left_Shoulder_Roll_STS3250.stl" file="meshes/Left_Shoulder_Roll_STS3250.stl" />
+    <mesh name="Gripper_Static_1.stl" file="meshes/Gripper_Static_1.stl" />
+    <mesh name="Gripper_Dynamic_1.stl" file="meshes/Gripper_Dynamic_1.stl" />
+    <mesh name="1910_0025_0816_REV1.stl" file="meshes/1910_0025_0816_REV1.stl" />
+    <mesh name="Right_Shoulder_Roll_STS3250.stl" file="meshes/Right_Shoulder_Roll_STS3250.stl" />
+    <mesh name="Gripper_Static.stl" file="meshes/Gripper_Static.stl" />
+    <mesh name="Gripper_Dynamic.stl" file="meshes/Gripper_Dynamic.stl" />
+  </asset>
+
+  <worldbody>
+    <body name="base" pos="0.00000000 0.00000000 0.26905699" quat="1 0 0 0" childclass="robot">
+      <freejoint name="floating_base" />
+      <geom name="base_visual" pos="0 0 0" quat="0.7071054825112363 0.0 0.0 0.7071080798594735" material="base_material" type="sphere" size="0.01" class="visual" />
+      <body name="Hip_Upper_Bracket" pos="0 0 0" quat="0.7071054825112363 0.0 0.0 0.7071080798594735">
+        <inertial pos="0.000064 0.001815 0.046968" quat="1.0 0.0 0.0 0.0" mass="0.947439" diaginertia="0.002272 0.002828 0.001521" />
+        <geom name="Hip_Upper_Bracket_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Hip_Upper_Bracket_material" type="mesh" mesh="Hip_Upper_Bracket.stl" class="visual" />
+        <body name="Upper_Servo_Hip_Bracket" pos="-0.043014 -0.012315 -0.016762" quat="1.0 0.0 0.0 0.0">
+          <joint name="right_hip_yaw" type="hinge" ref="0.0" class="feetech_sts3250" range="-1.570796 1.570796" axis="0 0 1" />
+          <inertial pos="-0.000048 -0.005548 0.001454" quat="1.0 0.0 0.0 0.0" mass="0.024375" diaginertia="1.6e-05 1.3e-05 6e-06" />
+          <geom name="Upper_Servo_Hip_Bracket_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Upper_Servo_Hip_Bracket_material" type="mesh" mesh="Upper_Servo_Hip_Bracket.stl" class="visual" />
+          <body name="Right_Hip_Roll_STS3250" pos="-0.000087 0.018650 -0.026665" quat="0.7071068967259818 0.7071066656470943 0.0 0.0">
+            <joint name="right_hip_roll" type="hinge" ref="0.0" class="feetech_sts3250" range="-0.610865 0.610865" axis="0 0 1" />
+            <inertial pos="-0.000391 -0.013509 -0.000227" quat="1.0 0.0 0.0 0.0" mass="0.187737" diaginertia="0.000116 0.000101 6.5e-05" />
+            <geom name="Right_Hip_Roll_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Right_Hip_Roll_STS3250_material" type="mesh" mesh="Right_Hip_Roll_STS3250.stl" class="visual" />
+            <body name="Upper_Leg" pos="-0.018200 0 0.016450" quat="0.7071068967259818 0.0 0.7071066656470943 0.0">
+              <joint name="right_hip_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-2.234021 0.872665" axis="0 0 1" />
+              <inertial pos="-0.003366 -0.049105 0.019668" quat="1.0 0.0 0.0 0.0" mass="0.048593" diaginertia="6.1e-05 2.8e-05 4.9e-05" />
+              <geom name="Upper_Leg_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Upper_Leg_material" type="mesh" mesh="Upper_Leg.stl" class="visual" />
+              <body name="Right_Knee_Pitch_STS3250" pos="0 -0.100000 0.001000" quat="-1.7320510330969933e-07 -0.999999999999985 -0.0 0.0">
+                <joint name="right_knee_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-2.268928 1.745329" axis="0 0 1" />
+                <inertial pos="-0.001016 0.028277 -0.017664" quat="1.0 0.0 0.0 0.0" mass="0.132026" diaginertia="0.000126 4.1e-05 0.00011" />
+                <geom name="Right_Knee_Pitch_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Left_Shoulder_Roll_STS3250_material" type="mesh" mesh="Right_Knee_Pitch_STS3250.stl" class="visual" />
+                <body name="Right_Ankle_Pitch_STS3250" pos="0 0.100000 -0.038724" quat="-1.7320510330969933e-07 -0.999999999999985 -0.0 0.0">
+                  <joint name="right_ankle_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-1.570796 0.610865" axis="0 0 1" />
+                  <inertial pos="0.016567 0.013062 -0.018658" quat="1.0 0.0 0.0 0.0" mass="0.186777" diaginertia="6.6e-05 0.000101 0.000115" />
+                  <geom name="Right_Ankle_Pitch_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Left_Shoulder_Roll_STS3250_material" type="mesh" mesh="Right_Ankle_Pitch_STS3250.stl" class="visual" />
+                  <body name="Right_Foot_Bracket" pos="0.053050 0 -0.019600" quat="-1.2247452309842457e-07 -0.7071068967259713 1.22474483074382e-07 -0.7071066656470838">
+                    <joint name="right_ankle_roll" type="hinge" ref="0.0" class="feetech_sts3250" range="-0.523599 0.523599" axis="0 0 1" />
+                    <inertial pos="-0.006961 0.021778 -0.045037" quat="1.0 0.0 0.0 0.0" mass="0.047410" diaginertia="4.7e-05 7.3e-05 3e-05" />
+                    <geom name="Right_Foot_Bracket_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Hip_Upper_Bracket_material" type="mesh" mesh="Right_Foot_Bracket.stl" class="visual" />
+                    <body name="Right_Foot" pos="0.018000 0.025630 -0.010575" quat="0.5000001633974483 0.4999999999999733 0.4999999999999733 -0.49999983660255165">
+                      <inertial pos="0.040732 -0.025000 -0.003390" quat="1.0 0.0 0.0 0.0" mass="0.065576" diaginertia="2.7e-05 5.5e-05 8.1e-05" />
+                      <geom name="Right_Foot_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Right_Foot_material" type="mesh" mesh="Right_Foot.stl" class="visual" />
+                      <geom name="Right_Foot_collision_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 -0.053937 0.001000 0.082870 -0.053937 0.001000" size="0.008000 0.050148" material="collision_material" class="collision" />
+                      <geom name="Right_Foot_visual_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 -0.053937 0.001000 0.082870 -0.053937 0.001000" size="0.008000 0.050148" material="Right_Foot_material" class="visual" />
+                      <geom name="Right_Foot_collision_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 0.003937 0.001000 0.082870 0.003937 0.001000" size="0.008000 0.050148" material="collision_material" class="collision" />
+                      <geom name="Right_Foot_visual_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 0.003937 0.001000 0.082870 0.003937 0.001000" size="0.008000 0.050148" material="Right_Foot_material" class="visual" />
+                      <site name="right_foot" size="0.05 0.037 0.008" pos="0.040732 -0.025 0.001" type="box" />
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="Upper_Servo_Hip_Bracket_1" pos="0.043070 -0.012315 -0.016762" quat="1.0 0.0 0.0 0.0">
+          <joint name="left_hip_yaw" type="hinge" ref="0.0" class="feetech_sts3250" range="-1.570796 1.570796" axis="0 0 1" />
+          <inertial pos="-0.000048 -0.005548 0.001454" quat="1.0 0.0 0.0 0.0" mass="0.024375" diaginertia="1.6e-05 1.3e-05 6e-06" />
+          <geom name="Upper_Servo_Hip_Bracket_1_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Upper_Servo_Hip_Bracket_material" type="mesh" mesh="Upper_Servo_Hip_Bracket_1.stl" class="visual" />
+          <body name="Left_Hip_Roll_STS3250" pos="-0.000087 0.018650 -0.026665" quat="0.7071068967259818 0.7071066656470943 0.0 0.0">
+            <joint name="left_hip_roll" type="hinge" ref="0.0" class="feetech_sts3250" range="-0.610865 0.610865" axis="0 0 1" />
+            <inertial pos="-0.000376 -0.013509 -0.000227" quat="1.0 0.0 0.0 0.0" mass="0.187737" diaginertia="0.000116 0.000101 6.5e-05" />
+            <geom name="Left_Hip_Roll_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Right_Hip_Roll_STS3250_material" type="mesh" mesh="Left_Hip_Roll_STS3250.stl" class="visual" />
+            <body name="Upper_Leg_1" pos="-0.018200 0 0.016450" quat="0.7071068967259818 0.0 0.7071066656470943 0.0">
+              <joint name="left_hip_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-2.234021 0.872665" axis="0 0 1" />
+              <inertial pos="-0.003366 -0.049105 0.019668" quat="1.0 0.0 0.0 0.0" mass="0.048593" diaginertia="6.1e-05 2.8e-05 4.9e-05" />
+              <geom name="Upper_Leg_1_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Upper_Leg_material" type="mesh" mesh="Upper_Leg_1.stl" class="visual" />
+              <body name="Left_Knee_Pitch_STS3250" pos="0 -0.100000 0.001000" quat="-1.7320510330969933e-07 -0.999999999999985 -0.0 0.0">
+                <joint name="left_knee_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-2.268928 1.745329" axis="0 0 1" />
+                <inertial pos="-0.001016 0.028277 -0.017664" quat="1.0 0.0 0.0 0.0" mass="0.132026" diaginertia="0.000126 4.1e-05 0.00011" />
+                <geom name="Left_Knee_Pitch_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Left_Shoulder_Roll_STS3250_material" type="mesh" mesh="Left_Knee_Pitch_STS3250.stl" class="visual" />
+                <body name="Left_Ankle_Pitch_STS3250" pos="0 0.100000 -0.038724" quat="-1.7320510330969933e-07 -0.999999999999985 -0.0 0.0">
+                  <joint name="left_ankle_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-1.570796 0.610865" axis="0 0 1" />
+                  <inertial pos="0.016567 0.013062 -0.018493" quat="1.0 0.0 0.0 0.0" mass="0.186777" diaginertia="6.5e-05 0.0001 0.000115" />
+                  <geom name="Left_Ankle_Pitch_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Left_Shoulder_Roll_STS3250_material" type="mesh" mesh="Left_Ankle_Pitch_STS3250.stl" class="visual" />
+                  <body name="Left_Foot_Bracket" pos="0.053050 0 -0.019400" quat="-1.2247452309842457e-07 -0.7071068967259713 1.22474483074382e-07 -0.7071066656470838">
+                    <joint name="left_ankle_roll" type="hinge" ref="0.0" class="feetech_sts3250" range="-0.523599 0.523599" axis="0 0 1" />
+                    <inertial pos="0.006961 0.021778 -0.045037" quat="1.0 0.0 0.0 0.0" mass="0.047410" diaginertia="4.7e-05 7.3e-05 3e-05" />
+                    <geom name="Left_Foot_Bracket_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Hip_Upper_Bracket_material" type="mesh" mesh="Left_Foot_Bracket.stl" class="visual" />
+                    <body name="Left_Foot" pos="0.032000 0.025630 -0.010575" quat="0.5000001633974483 0.4999999999999733 0.4999999999999733 -0.49999983660255165">
+                      <inertial pos="0.040732 -0.025000 -0.003390" quat="1.0 0.0 0.0 0.0" mass="0.065576" diaginertia="2.7e-05 5.5e-05 8.1e-05" />
+                      <geom name="Left_Foot_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Right_Foot_material" type="mesh" mesh="Left_Foot.stl" class="visual" />
+                      <geom name="Left_Foot_collision_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 -0.053937 0.001000 0.082870 -0.053937 0.001000" size="0.008000 0.050148" material="collision_material" class="collision" />
+                      <geom name="Left_Foot_visual_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 -0.053937 0.001000 0.082870 -0.053937 0.001000" size="0.008000 0.050148" material="Right_Foot_material" class="visual" />
+                      <geom name="Left_Foot_collision_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 0.003937 0.001000 0.082870 0.003937 0.001000" size="0.008000 0.050148" material="collision_material" class="collision" />
+                      <geom name="Left_Foot_visual_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.001425 0.003937 0.001000 0.082870 0.003937 0.001000" size="0.008000 0.050148" material="Right_Foot_material" class="visual" />
+                      <site name="left_foot" size="0.05 0.037 0.008" pos="0.040732 -0.025 0.001" type="box" />
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="imu" pos="0.000028 -0.007747 0.110737" quat="-1.732050904062657e-07 -6.685716821730214e-11 -0.00038599999041458497 -0.9999999255019859">
+          <inertial pos="0 0 -0.000465" quat="1.0 0.0 0.0 0.0" mass="0.002752" diaginertia="1e-06 1e-06 1e-06" />
+          <geom name="imu_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="imu_material" type="mesh" mesh="imu.stl" class="visual" />
+          <site name="imu_site" quat="1.0 0.0 0.0 0.0" pos="0.0 0.0 0.0" />
+        </body>
+        <body name="1910_0025_0816_REV1_1" pos="0.065728 -0.004315 0.098638" quat="0.5000001633974483 -0.4999999999999733 -0.49999983660255165 0.4999999999999733">
+          <joint name="left_shoulder_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-1.570796 3.141593" axis="0 0 1" />
+          <inertial pos="0.000032 0.001430 -0.013973" quat="1.0 0.0 0.0 0.0" mass="0.018130" diaginertia="3e-06 5e-06 4e-06" />
+          <geom name="1910_0025_0816_REV1_1_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="1910_0025_0816_REV1_1_material" type="mesh" mesh="1910_0025_0816_REV1_1.stl" class="visual" />
+          <body name="Left_Shoulder_Roll_STS3250" pos="-0.018758 0.004100 -0.032700" quat="-1.2247452309842457e-07 0.7071068967259713 -1.22474483074382e-07 -0.7071066656470838">
+            <joint name="left_shoulder_roll" type="hinge" ref="0.0" class="feetech_sts3250" range="-0.349066 3.316126" axis="0 0 1" />
+            <inertial pos="0.000214 -0.038685 -0.017251" quat="1.0 0.0 0.0 0.0" mass="0.151717" diaginertia="0.000188 3.4e-05 0.000175" />
+            <geom name="Left_Shoulder_Roll_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Left_Shoulder_Roll_STS3250_material" type="mesh" mesh="Left_Shoulder_Roll_STS3250.stl" class="visual" />
+            <body name="Gripper_Static_1" pos="0 -0.086212 0" quat="-1.7320510330969933e-07 -0.999999999999985 -0.0 0.0">
+              <joint name="left_elbow_roll" type="hinge" ref="0.0" class="feetech_sts3215_12v" range="-1.396263 1.570796" axis="0 0 1" />
+              <inertial pos="0.003807 0.052618 0.017678" quat="1.0 0.0 0.0 0.0" mass="0.106517" diaginertia="9.2e-05 3e-05 8.6e-05" />
+              <geom name="Gripper_Static_1_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Gripper_Static_1_material" type="mesh" mesh="Gripper_Static_1.stl" class="visual" />
+              <body name="Gripper_Dynamic_1" pos="0.012500 0.060000 -0.000260" quat="1.0 0.0 0.0 0.0">
+                <joint name="left_gripper_roll" type="hinge" ref="0.0" class="feetech_sts3215_12v" range="-0.488692 0.663225" axis="0 0 1" />
+                <inertial pos="0.018952 0.024682 0.018814" quat="1.0 0.0 0.0 0.0" mass="0.025433" diaginertia="1.1e-05 5e-06 9e-06" />
+                <geom name="Gripper_Dynamic_1_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Gripper_Dynamic_1_material" type="mesh" mesh="Gripper_Dynamic_1.stl" class="visual" />
+              </body>
+            </body>
+          </body>
+        </body>
+        <body name="1910_0025_0816_REV1" pos="-0.065672 -0.004315 0.098638" quat="0.5000001633974483 0.4999999999999733 0.49999983660255165 0.4999999999999733">
+          <joint name="right_shoulder_pitch" type="hinge" ref="0.0" class="feetech_sts3250" range="-3.141593 1.570796" axis="0 0 1" />
+          <inertial pos="-0.000032 -0.001430 -0.013973" quat="1.0 0.0 0.0 0.0" mass="0.018130" diaginertia="3e-06 5e-06 4e-06" />
+          <geom name="1910_0025_0816_REV1_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="1910_0025_0816_REV1_1_material" type="mesh" mesh="1910_0025_0816_REV1.stl" class="visual" />
+          <body name="Right_Shoulder_Roll_STS3250" pos="-0.018892 -0.004100 -0.032700" quat="-1.2247452309842457e-07 0.7071068967259713 1.22474483074382e-07 0.7071066656470838">
+            <joint name="right_shoulder_roll" type="hinge" ref="0.0" class="feetech_sts3250" range="-3.316126 0.349066" axis="0 0 -1" />
+            <inertial pos="-0.000210 0.038685 0.017251" quat="1.0 0.0 0.0 0.0" mass="0.151717" diaginertia="0.000188 3.4e-05 0.000175" />
+            <geom name="Right_Shoulder_Roll_STS3250_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Left_Shoulder_Roll_STS3250_material" type="mesh" mesh="Right_Shoulder_Roll_STS3250.stl" class="visual" />
+            <body name="Gripper_Static" pos="0 0.086212 0" quat="1.0 0.0 0.0 0.0">
+              <joint name="right_elbow_roll" type="hinge" ref="0.0" class="feetech_sts3215_12v" range="-1.570796 1.396263" axis="0 0 1" />
+              <inertial pos="-0.003821 0.052614 0.017678" quat="1.0 0.0 0.0 0.0" mass="0.106517" diaginertia="9.2e-05 3.1e-05 8.6e-05" />
+              <geom name="Gripper_Static_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Gripper_Static_1_material" type="mesh" mesh="Gripper_Static.stl" class="visual" />
+              <body name="Gripper_Dynamic" pos="-0.012500 0.060000 -0.000260" quat="-1.7320510330969933e-07 -0.999999999999985 -0.0 0.0">
+                <joint name="right_gripper_roll" type="hinge" ref="0.0" class="feetech_sts3215_12v" range="-0.663225 0.488692" axis="0 0 -1" />
+                <inertial pos="-0.018952 -0.024682 -0.018814" quat="1.0 0.0 0.0 0.0" mass="0.025433" diaginertia="1.1e-05 5e-06 9e-06" />
+                <geom name="Gripper_Dynamic_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="Gripper_Dynamic_1_material" type="mesh" mesh="Gripper_Dynamic.stl" class="visual" />
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      <site name="base_site" pos="0 0 0" quat="1 0 0 0" />
+      <camera name="front_camera" mode="track" fovy="90.0" quat="4.329780281177467e-17 4.329780281177466e-17 0.7071067811865475 0.7071067811865476" pos="0.0 2.0 0.5" />
+      <camera name="side_camera" mode="track" fovy="90.0" quat="-0.5 -0.4999999999999999 0.5 0.5000000000000001" pos="-2.0 0.0 0.5" />
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="right_hip_yaw_ctrl" joint="right_hip_yaw" class="feetech_sts3250" />
+    <motor name="right_hip_roll_ctrl" joint="right_hip_roll" class="feetech_sts3250" />
+    <motor name="right_hip_pitch_ctrl" joint="right_hip_pitch" class="feetech_sts3250" />
+    <motor name="right_knee_pitch_ctrl" joint="right_knee_pitch" class="feetech_sts3250" />
+    <motor name="right_ankle_pitch_ctrl" joint="right_ankle_pitch" class="feetech_sts3250" />
+    <motor name="right_ankle_roll_ctrl" joint="right_ankle_roll" class="feetech_sts3250" />
+    <motor name="left_hip_yaw_ctrl" joint="left_hip_yaw" class="feetech_sts3250" />
+    <motor name="left_hip_roll_ctrl" joint="left_hip_roll" class="feetech_sts3250" />
+    <motor name="left_hip_pitch_ctrl" joint="left_hip_pitch" class="feetech_sts3250" />
+    <motor name="left_knee_pitch_ctrl" joint="left_knee_pitch" class="feetech_sts3250" />
+    <motor name="left_ankle_pitch_ctrl" joint="left_ankle_pitch" class="feetech_sts3250" />
+    <motor name="left_ankle_roll_ctrl" joint="left_ankle_roll" class="feetech_sts3250" />
+    <motor name="left_shoulder_pitch_ctrl" joint="left_shoulder_pitch" class="feetech_sts3250" />
+    <motor name="left_shoulder_roll_ctrl" joint="left_shoulder_roll" class="feetech_sts3250" />
+    <motor name="left_elbow_roll_ctrl" joint="left_elbow_roll" class="feetech_sts3215_12v" />
+    <motor name="left_gripper_roll_ctrl" joint="left_gripper_roll" class="feetech_sts3215_12v" />
+    <motor name="right_shoulder_pitch_ctrl" joint="right_shoulder_pitch" class="feetech_sts3250" />
+    <motor name="right_shoulder_roll_ctrl" joint="right_shoulder_roll" class="feetech_sts3250" />
+    <motor name="right_elbow_roll_ctrl" joint="right_elbow_roll" class="feetech_sts3215_12v" />
+    <motor name="right_gripper_roll_ctrl" joint="right_gripper_roll" class="feetech_sts3215_12v" />
+  </actuator>
+
+  <contact />
+
+  <sensor>
+    <framepos name="base_site_pos" objtype="site" objname="base_site" />
+    <framequat name="base_site_quat" objtype="site" objname="base_site" />
+    <framelinvel name="base_site_linvel" objtype="site" objname="base_site" />
+    <frameangvel name="base_site_angvel" objtype="site" objname="base_site" />
+    <velocimeter name="base_site_vel" site="base_site" />
+    <accelerometer name="imu_acc" site="imu_site" noise="0.01" />
+    <gyro name="imu_gyro" site="imu_site" noise="0.01" />
+    <magnetometer name="imu_mag" site="imu_site" noise="0.05" />
+    <framepos name="imu_site_pos" objtype="site" objname="imu_site" />
+    <framequat name="imu_site_quat" objtype="site" objname="imu_site" />
+    <framelinvel name="imu_site_linvel" objtype="site" objname="imu_site" />
+    <frameangvel name="imu_site_angvel" objtype="site" objname="imu_site" />
+    <velocimeter name="imu_site_vel" site="imu_site" />
+    <force name="left_foot_force" site="left_foot" />
+    <force name="right_foot_force" site="right_foot" />
+    <touch name="left_foot_touch" site="left_foot" />
+    <touch name="right_foot_touch" site="right_foot" />
+  </sensor>
+</mujoco>
