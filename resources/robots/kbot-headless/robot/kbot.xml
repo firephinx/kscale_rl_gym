@@ -192,11 +192,11 @@
   </worldbody>
 
   <actuator>
-    <motor name="dof_left_hip_pitch_04_ctrl" joint="dof_left_hip_pitch_04" class="robstride_04" />
-    <motor name="dof_left_hip_roll_03_ctrl" joint="dof_left_hip_roll_03" class="robstride_03" />
-    <motor name="dof_left_hip_yaw_03_ctrl" joint="dof_left_hip_yaw_03" class="robstride_03" />
-    <motor name="dof_left_knee_04_ctrl" joint="dof_left_knee_04" class="robstride_04" />
-    <motor name="dof_left_ankle_02_ctrl" joint="dof_left_ankle_02" class="robstride_02" />
+    <motor name="dof_right_shoulder_pitch_03_ctrl" joint="dof_right_shoulder_pitch_03" class="robstride_03" />
+    <motor name="dof_right_shoulder_roll_03_ctrl" joint="dof_right_shoulder_roll_03" class="robstride_03" />
+    <motor name="dof_right_shoulder_yaw_02_ctrl" joint="dof_right_shoulder_yaw_02" class="robstride_02" />
+    <motor name="dof_right_elbow_02_ctrl" joint="dof_right_elbow_02" class="robstride_02" />
+    <motor name="dof_right_wrist_00_ctrl" joint="dof_right_wrist_00" class="robstride_00" />
     <motor name="dof_left_shoulder_pitch_03_ctrl" joint="dof_left_shoulder_pitch_03" class="robstride_03" />
     <motor name="dof_left_shoulder_roll_03_ctrl" joint="dof_left_shoulder_roll_03" class="robstride_03" />
     <motor name="dof_left_shoulder_yaw_02_ctrl" joint="dof_left_shoulder_yaw_02" class="robstride_02" />
@@ -207,11 +207,11 @@
     <motor name="dof_right_hip_yaw_03_ctrl" joint="dof_right_hip_yaw_03" class="robstride_03" />
     <motor name="dof_right_knee_04_ctrl" joint="dof_right_knee_04" class="robstride_04" />
     <motor name="dof_right_ankle_02_ctrl" joint="dof_right_ankle_02" class="robstride_02" />
-    <motor name="dof_right_shoulder_pitch_03_ctrl" joint="dof_right_shoulder_pitch_03" class="robstride_03" />
-    <motor name="dof_right_shoulder_roll_03_ctrl" joint="dof_right_shoulder_roll_03" class="robstride_03" />
-    <motor name="dof_right_shoulder_yaw_02_ctrl" joint="dof_right_shoulder_yaw_02" class="robstride_02" />
-    <motor name="dof_right_elbow_02_ctrl" joint="dof_right_elbow_02" class="robstride_02" />
-    <motor name="dof_right_wrist_00_ctrl" joint="dof_right_wrist_00" class="robstride_00" />    
+    <motor name="dof_left_hip_pitch_04_ctrl" joint="dof_left_hip_pitch_04" class="robstride_04" />
+    <motor name="dof_left_hip_roll_03_ctrl" joint="dof_left_hip_roll_03" class="robstride_03" />
+    <motor name="dof_left_hip_yaw_03_ctrl" joint="dof_left_hip_yaw_03" class="robstride_03" />
+    <motor name="dof_left_knee_04_ctrl" joint="dof_left_knee_04" class="robstride_04" />
+    <motor name="dof_left_ankle_02_ctrl" joint="dof_left_ankle_02" class="robstride_02" />
   </actuator>
 
   <contact />

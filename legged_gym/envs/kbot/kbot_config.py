@@ -29,9 +29,20 @@ class KBotRoughCfg( LeggedRobotCfg ):
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 71
+        num_observations = 66
         num_privileged_obs = 74
         num_actions = 20
+
+    class commands(LeggedRobotCfg.commands):
+        curriculum = True
+        max_curriculum = 1.
+        num_commands = 3 # default: lin_vel_x, lin_vel_y, ang_vel_yaw
+        resampling_time = 10. # time before command are changed[s]
+        heading_command = False # if true: compute ang vel command from heading error
+        class ranges:
+            lin_vel_x = [-1.0, 1.0] # min max [m/s]
+            lin_vel_y = [-1.0, 1.0]   # min max [m/s]
+            ang_vel_yaw = [-1, 1]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -79,7 +90,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless/robot/robot.urdf'
         name = "kbot"
         foot_name = 'LEG_FOOT'
-        penalize_contacts_on = ["hip", "knee"]
+        penalize_contacts_on = []
         terminate_after_contacts_on = ["base"]
         self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
         flip_visual_attachments = False

@@ -71,16 +71,20 @@ if __name__ == "__main__":
     # Load robot model
     m = mujoco.MjModel.from_xml_path(xml_path)
     d = mujoco.MjData(m)
+
     m.opt.timestep = simulation_dt
 
     # load policy
     policy = torch.jit.load(policy_path)
+
+    np.set_printoptions(suppress=True)
 
     with mujoco.viewer.launch_passive(m, d) as viewer:
         # Close the viewer automatically after simulation_duration wall-seconds.
         start = time.time()
         while viewer.is_running() and time.time() - start < simulation_duration:
             step_start = time.time()
+            print(d.qpos)
             tau = pd_control(target_dof_pos, d.qpos[7:], kps, np.zeros_like(kds), d.qvel[6:], kds)
             d.ctrl[:] = tau
             # mj_step can be replaced with code that also evaluates
@@ -97,8 +101,13 @@ if __name__ == "__main__":
                 quat = d.qpos[3:7]
                 omega = d.qvel[3:6]
 
+                
+
                 qj = (qj - default_angles) * dof_pos_scale
+                remapped_qj = np.concatenate((qj[15:],qj[5:15],qj[:5]))
+
                 dqj = dqj * dof_vel_scale
+                remapped_dqj = np.concatenate((dqj[15:],dqj[5:15],dqj[:5]))
                 gravity_orientation = get_gravity_orientation(quat)
                 omega = omega * ang_vel_scale
 
@@ -108,20 +117,23 @@ if __name__ == "__main__":
                 sin_phase = np.sin(2 * np.pi * phase)
                 cos_phase = np.cos(2 * np.pi * phase)
 
-                obs[:3] = omega
-                obs[3:6] = gravity_orientation
-                obs[6:9] = cmd * cmd_scale
-                obs[9 : 9 + num_actions] = qj
-                obs[9 + num_actions : 9 + 2 * num_actions] = dqj
-                obs[9 + 2 * num_actions : 9 + 3 * num_actions] = action
-                obs[9 + 3 * num_actions : 9 + 3 * num_actions + 2] = np.array([sin_phase, cos_phase])
+                #obs[:3] = omega
+                obs[:3] = gravity_orientation
+                obs[3:6] = cmd * cmd_scale
+                obs[6 : 6 + num_actions] = remapped_qj
+                obs[6 + num_actions : 6 + 2 * num_actions] = remapped_dqj
+                obs[6 + 2 * num_actions : 6 + 3 * num_actions] = action
+                #obs[9 + 3 * num_actions : 9 + 3 * num_actions + 2] = np.array([sin_phase, cos_phase])
                 obs_tensor = torch.from_numpy(obs).unsqueeze(0)
                 # policy inference
                 action = policy(obs_tensor).detach().numpy().squeeze()
+
+                remapped_actions = np.concatenate((action[15:],action[5:15],action[:5]))
                 #print(action)
                 # transform action to target_dof_pos
-                target_dof_pos = action * action_scale + default_angles
-                print(target_dof_pos)
+                #target_dof_pos = action * action_scale + default_angles
+                #target_dof_pos = action * action_scale 
+                target_dof_pos = remapped_actions * action_scale + default_angles
 
             # Pick up changes to the physics state, apply perturbations, update options from GUI.
             viewer.sync()
