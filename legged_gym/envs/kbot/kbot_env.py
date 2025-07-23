@@ -141,3 +141,6 @@ class KBot(LeggedRobot):
         tgt = torch.tensor([0.0,0.0]).to(device='cuda:0')
         rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
         return rp_err
+
+    def _reward_stable_arms(self):
+        return torch.sum(torch.square(self.dof_pos[:,self.arm_indices_minus_shoulder_pitch] - self.default_dof_pos[:,self.arm_indices_minus_shoulder_pitch]), dim=1)

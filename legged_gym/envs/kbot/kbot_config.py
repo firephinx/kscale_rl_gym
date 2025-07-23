@@ -47,12 +47,12 @@ class KBotRoughCfg( LeggedRobotCfg ):
 
     class domain_rand(LeggedRobotCfg.domain_rand):
         randomize_friction = True
-        friction_range = [0.1, 1.25]
+        friction_range = [0.01, 1.5]
         randomize_base_mass = True
-        added_mass_range = [-1., 3.]
+        added_mass_range = [-5., 5.]
         push_robots = True
         push_interval_s = 5
-        max_push_vel_xy = 1.5
+        max_push_vel_xy = 5
       
 
     class control( LeggedRobotCfg.control ):
@@ -91,6 +91,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         name = "kbot"
         foot_name = 'LEG_FOOT'
         imu_name = "imu"
+        arm_names_minus_shoulder_pitch = ["left_shoulder_roll", "left_elbow_roll", "left_gripper_roll", "right_shoulder_roll", "right_elbow_roll", "right_gripper_roll"]
         penalize_contacts_on = ["knee", "hip"]
         terminate_after_contacts_on = ["base"]
         self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
@@ -124,6 +125,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             contact = 1.8
             feet_contact_forces = -0.01
             flat_feet = -1.0
+            stable_arms = 10.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:

@@ -619,6 +619,10 @@ class LeggedRobot(BaseTask):
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], feet_names[i])
 
+        self.arm_indices_minus_shoulder_pitch = torch.zeros(len(self.cfg.asset.arm_names_minus_shoulder_pitch), dtype=torch.long, device=self.device, requires_grad=False)
+        for i in range(len(self.cfg.asset.arm_names_minus_shoulder_pitch)):
+            self.arm_indices_minus_shoulder_pitch[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], self.cfg.asset.arm_names_minus_shoulder_pitch[i])
+
         self.imu_indices = self.gym.find_actor_rigid_body_handle(
             self.envs[0], self.actor_handles[0], self.cfg.asset.imu_name
         )
