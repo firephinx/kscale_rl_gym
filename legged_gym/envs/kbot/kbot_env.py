@@ -3,6 +3,7 @@ from legged_gym.envs.base.legged_robot import LeggedRobot
 
 from isaacgym.torch_utils import *
 from isaacgym import gymtorch, gymapi, gymutil
+from legged_gym.utils.isaacgym_utils import get_euler_xyz as get_euler_xyz_in_tensor
 import torch
 
 class KBot(LeggedRobot):
@@ -39,6 +40,7 @@ class KBot(LeggedRobot):
         self.rigid_body_states_view = self.rigid_body_states.view(self.num_envs, -1, 13)
         self.feet_state = self.rigid_body_states_view[:, self.feet_indices, :]
         self.feet_pos = self.feet_state[:, :, :3]
+        self.feet_quat = self.feet_state[:, :, 3:7]
         self.feet_vel = self.feet_state[:, :, 7:10]
         
     def _init_buffers(self):
@@ -50,6 +52,7 @@ class KBot(LeggedRobot):
         
         self.feet_state = self.rigid_body_states_view[:, self.feet_indices, :]
         self.feet_pos = self.feet_state[:, :, :3]
+        self.feet_quat = self.feet_state[:, :, 3:7]
         self.feet_vel = self.feet_state[:, :, 7:10]
         
     def _post_physics_step_callback(self):
@@ -117,7 +120,6 @@ class KBot(LeggedRobot):
         return torch.sum(penalize, dim=(1,2))
     
     def _reward_hip_pos(self):
-        print(self.dof_pos[:,[2,3,6,7]])
         return torch.sum(torch.square(self.dof_pos[:,[2,3,6,7]]), dim=1)
     
     def _reward_feet_contact_forces(self):
@@ -130,3 +132,12 @@ class KBot(LeggedRobot):
             ).clip(0, 400),
             dim=1,
         )
+
+    def _reward_flat_feet(self):
+        # 1) quats → euler, keep roll & pitch only
+        right_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,0,:])[:,:2]
+        left_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,1,:])[:,:2]
+
+        tgt = torch.tensor([0.0,0.0]).to(device='cuda:0')
+        rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
+        return rp_err

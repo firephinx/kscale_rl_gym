@@ -66,7 +66,7 @@ if __name__ == "__main__":
     target_dof_pos = default_angles.copy()
     obs = np.zeros(num_obs, dtype=np.float32)
 
-    # counter = 0
+    counter = 0
 
     # Load robot model
     m = mujoco.MjModel.from_xml_path(xml_path)

@@ -117,12 +117,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
             collision = 0.0
             action_rate = -0.01
             dof_pos_limits = -5.0
-            alive = 1.0
+            alive = 10.0
             hip_pos = 0.0 #-1.0
             contact_no_vel = -2.0
             feet_swing_height = -10.0 #-0.2
             contact = 1.8
             feet_contact_forces = -0.01
+            flat_feet = -1.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
