@@ -66,7 +66,7 @@ if __name__ == "__main__":
     target_dof_pos = default_angles.copy()
     obs = np.zeros(num_obs, dtype=np.float32)
 
-    counter = 0
+    # counter = 0
 
     # Load robot model
     m = mujoco.MjModel.from_xml_path(xml_path)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 qj = d.qpos[7:]
                 dqj = d.qvel[6:]
                 quat = d.qpos[3:7]
-                omega = d.qvel[3:6]
+                # omega = d.qvel[3:6]
 
                 qj = (qj - default_angles) * dof_pos_scale
                 remapped_qj = np.concatenate((qj[15:],qj[5:15],qj[:5]))
@@ -106,13 +106,13 @@ if __name__ == "__main__":
                 dqj = dqj * dof_vel_scale
                 remapped_dqj = np.concatenate((dqj[15:],dqj[5:15],dqj[:5]))
                 gravity_orientation = get_gravity_orientation(quat)
-                omega = omega * ang_vel_scale
+                # omega = omega * ang_vel_scale
 
-                period = 0.8
-                count = counter * simulation_dt
-                phase = count % period / period
-                sin_phase = np.sin(2 * np.pi * phase)
-                cos_phase = np.cos(2 * np.pi * phase)
+                # period = 0.8
+                # count = counter * simulation_dt
+                # phase = count % period / period
+                # sin_phase = np.sin(2 * np.pi * phase)
+                # cos_phase = np.cos(2 * np.pi * phase)
 
                 #obs[:3] = omega
                 obs[:3] = gravity_orientation

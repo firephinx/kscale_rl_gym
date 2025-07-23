@@ -44,34 +44,62 @@ obs = env.get_observations()
 # load policy
 train_cfg.runner.resume = True
 ppo_runner, train_cfg = task_registry.make_alg_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
-policy = ppo_runner.get_inference_policy(device=env.device)
+#policy = ppo_runner.get_inference_policy(device=env.device)
+#policy_nn = ppo_runner.alg.actor_critic
+#actor_net = copy.deepcopy(policy_nn.actor).cpu().eval()
 
-actor_net = copy.deepcopy(policy)
+try:
+    policy_nn = ppo_runner.alg.policy
+except AttributeError:
+    policy_nn = ppo_runner.alg.actor_critic
+
+#actor_net = copy.deepcopy(policy_nn).cpu().eval()
+if hasattr(policy_nn, "actor"):
+    actor_net = copy.deepcopy(policy_nn.actor).cpu().eval()
+    memory_net = copy.deepcopy(policy_nn.memory_a).cpu().eval()
+elif hasattr(policy_nn, "student"):
+    actor_net = copy.deepcopy(policy_nn.student).cpu().eval()
+    memory_net = copy.deepcopy(policy_nn.memory_a).cpu().eval()
+else:
+    raise RuntimeError("Unsupported policy object – cannot locate actor network")
+
+normalizer = getattr(ppo_runner, "obs_normalizer", None)
+if normalizer is None:
+    normalizer = torch.nn.Identity().cpu().eval()
+else:
+    normalizer = copy.deepcopy(normalizer).cpu().eval()
 
 class ActorWrapper(torch.nn.Module):
     """Wraps (normalizer → actor) into a single forward pass."""
 
-    def __init__(self, actor, norm):
+    def __init__(self, actor, memory, norm):
         super().__init__()
         self.actor = actor
+        self.memory = memory
         self.norm = norm
-
+        
     def forward(self, obs: torch.Tensor) -> torch.Tensor:  # noqa: D401 – simple wrapper
-        return self.actor(self.norm(obs))
+        return self.actor(self.memory(self.norm(obs))).squeeze()
+        
 
-wrapper = ActorWrapper(actor_net, torch.nn.Identity()).eval()
+wrapper = ActorWrapper(actor_net, memory_net, normalizer).eval()
 for p in wrapper.parameters():
     p.requires_grad = False
 
 num_joints = 20
 CARRY_SHAPE: Tuple[int, ...] = (num_joints,)
-
 NUM_COMMANDS = 3
 
 def _init_fn() -> torch.Tensor:  # noqa: D401 – concise docstring
     """Returns the initial carry tensor (all zeros)."""
     return torch.zeros(CARRY_SHAPE)
 
+cmd_scale = torch.tensor([1.0, 1.0, 0.25])
+action_scale = torch.tensor(0.25)
+dof_pos_scale = torch.tensor(1.0)
+dof_vel_scale = torch.tensor(0.05)
+default_angles = torch.tensor([0.3491, 0.0, 0.0, 0.8727, -0.5236, 0.0, 0.1745, 0.0, -1.5708, 0.0, -0.3491, 0.0, 0.0, -0.8727, 0.5236, 0.0, -0.1745, 0.0, 1.5708, 0.0])
+num_actions = torch.tensor(20)
 
 def _step_fn(
     projected_gravity: torch.Tensor,
@@ -81,10 +109,15 @@ def _step_fn(
     carry: torch.Tensor,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Policy step."""
-    obs = torch.cat((projected_gravity, command, joint_angles, joint_angular_velocities, carry), dim=-1)
+    
+    cmd = command * cmd_scale
+    joint_angles = (joint_angles - default_angles) * dof_pos_scale
+    joint_angular_velocities = joint_angular_velocities * dof_vel_scale
+
+    obs = torch.cat((projected_gravity, cmd, joint_angles, joint_angular_velocities, carry), dim=-1)
     actions = wrapper(obs)
 
-    return actions, actions
+    return actions * action_scale + default_angles, actions
 
 step_fn = torch.jit.trace(
     _step_fn,
@@ -95,6 +128,7 @@ step_fn = torch.jit.trace(
         torch.zeros(NUM_COMMANDS),
         torch.zeros(*CARRY_SHAPE),
     ),
+    check_trace=False
 )
 
 init_fn = torch.jit.trace(_init_fn, ())
@@ -103,11 +137,11 @@ init_fn = torch.jit.trace(_init_fn, ())
 # Export to ONNX (via kinfer) and package
 # ----------------------------------------------------------------------------
 
-joint_names = ['dof_right_shoulder_pitch_03',
-                'dof_right_shoulder_roll_03',   
-                'dof_right_shoulder_yaw_02',
-                'dof_right_elbow_02',
-                'dof_right_wrist_00',
+joint_names = ['dof_left_hip_pitch_04',
+                'dof_left_hip_roll_03',
+                'dof_left_hip_yaw_03',
+                'dof_left_knee_04',
+                'dof_left_ankle_02',
                 'dof_left_shoulder_pitch_03',
                 'dof_left_shoulder_roll_03',
                 'dof_left_shoulder_yaw_02',
@@ -118,11 +152,11 @@ joint_names = ['dof_right_shoulder_pitch_03',
                 'dof_right_hip_yaw_03',
                 'dof_right_knee_04',
                 'dof_right_ankle_02',
-                'dof_left_hip_pitch_04',
-                'dof_left_hip_roll_03',
-                'dof_left_hip_yaw_03',
-                'dof_left_knee_04',
-                'dof_left_ankle_02']
+                'dof_right_shoulder_pitch_03',
+                'dof_right_shoulder_roll_03',
+                'dof_right_shoulder_yaw_02',
+                'dof_right_elbow_02',
+                'dof_right_wrist_00']
 metadata = PyModelMetadata(
     joint_names=joint_names,
     num_commands=NUM_COMMANDS,
