@@ -286,10 +286,12 @@ class LeggedRobot(BaseTask):
         #         sum += p.mass
         #         print(f"Mass of body {i}: {p.mass} (before randomization)")
         #     print(f"Total mass {sum} (before randomization)")
-        # randomize base mass
-        if self.cfg.domain_rand.randomize_base_mass:
-            rng = self.cfg.domain_rand.added_mass_range
-            props[0].mass += np.random.uniform(rng[0], rng[1])
+        # randomize link masses
+        if self.cfg.domain_rand.randomize_link_masses:
+            for i, p in enumerate(props):
+                rng = self.cfg.domain_rand.added_mass_range
+                props[i].mass += np.random.uniform(rng[0], rng[1])
+            
         return props
     
     def _post_physics_step_callback(self):
@@ -335,9 +337,15 @@ class LeggedRobot(BaseTask):
         actions_scaled = actions * self.cfg.control.action_scale
         control_type = self.cfg.control.control_type
         if control_type=="P":
-            torques = self.p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains*self.dof_vel
+            if self.cfg.domain_rand.randomize_gains:
+                torques = self.randomized_p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.randomized_d_gains*self.dof_vel
+            else:
+                torques = self.p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains*self.dof_vel
         elif control_type=="V":
-            torques = self.p_gains*(actions_scaled - self.dof_vel) - self.d_gains*(self.dof_vel - self.last_dof_vel)/self.sim_params.dt
+            if self.cfg.domain_rand.randomize_gains:
+                torques = self.randomized_p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.randomized_d_gains*self.dof_vel
+            else:
+                torques = self.p_gains*(actions_scaled - self.dof_vel) - self.d_gains*(self.dof_vel - self.last_dof_vel)/self.sim_params.dt
         elif control_type=="T":
             torques = actions_scaled
         else:
@@ -489,7 +497,6 @@ class LeggedRobot(BaseTask):
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         for i in range(self.num_dofs):
             name = self.dof_names[i]
-            print(name)
             angle = self.cfg.init_state.default_joint_angles[name]
             self.default_dof_pos[i] = angle
             found = False
@@ -503,7 +510,15 @@ class LeggedRobot(BaseTask):
                 self.d_gains[i] = 0.
                 if self.cfg.control.control_type in ["P", "V"]:
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
+                
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
+    
+        self.randomized_p_gains = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+        self.randomized_d_gains = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+        if self.cfg.domain_rand.randomize_gains:
+            for i in range(self.num_dofs):
+                self.randomized_p_gains[:,i] = torch_rand_float((1-self.cfg.domain_rand.randomize_gains_fraction) * self.p_gains[i], (1+self.cfg.domain_rand.randomize_gains_fraction) * self.p_gains[i], (self.num_envs,1), device=self.device).squeeze(1)
+                self.randomized_d_gains[:,i] = torch_rand_float((1-self.cfg.domain_rand.randomize_gains_fraction) * self.d_gains[i], (1+self.cfg.domain_rand.randomize_gains_fraction) * self.d_gains[i], (self.num_envs,1), device=self.device).squeeze(1)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.

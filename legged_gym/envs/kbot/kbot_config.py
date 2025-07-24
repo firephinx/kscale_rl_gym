@@ -48,8 +48,10 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class domain_rand(LeggedRobotCfg.domain_rand):
         randomize_friction = True
         friction_range = [0.1, 2.0]
-        randomize_base_mass = True
-        added_mass_range = [-5., 5.]
+        randomize_link_masses = True
+        added_mass_range = [-2., 2.]
+        randomize_gains = True
+        randomize_gains_fraction = 0.1
         push_robots = True
         push_interval_s = 5
         max_push_vel_xy = 1.5
