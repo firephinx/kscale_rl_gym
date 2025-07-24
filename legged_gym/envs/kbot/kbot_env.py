@@ -138,7 +138,7 @@ class KBot(LeggedRobot):
         right_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,0,:])[:,:2]
         left_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,1,:])[:,:2]
 
-        tgt = torch.tensor([0.0,0.0]).to(device='cuda:0')
+        tgt = torch.tensor([0.0,0.0]).to(device=self.device)
         rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
         return rp_err
 
