@@ -288,10 +288,10 @@ class LeggedRobot(BaseTask):
         #     print(f"Total mass {sum} (before randomization)")
         # randomize link masses
         if self.cfg.domain_rand.randomize_link_masses:
-            if env_id==0:
-                for i, p in enumerate(props):
-                    rng = self.cfg.domain_rand.added_mass_range
-                    props[i].mass += np.random.uniform(rng[0], rng[1])
+            for i, p in enumerate(props):
+                rng = self.cfg.domain_rand.added_mass_range
+                props[i].mass += np.random.uniform(rng[0], rng[1])
+                props[i].mass = max(0.1, props[i].mass)
             
         return props
     
