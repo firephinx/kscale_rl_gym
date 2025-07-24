@@ -127,7 +127,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             contact = 1.8
             feet_contact_forces = -0.01
             flat_feet = -1.0
-            stable_arms = 5.0
+            stable_arms = -1.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:

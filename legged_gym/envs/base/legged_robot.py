@@ -288,9 +288,10 @@ class LeggedRobot(BaseTask):
         #     print(f"Total mass {sum} (before randomization)")
         # randomize link masses
         if self.cfg.domain_rand.randomize_link_masses:
-            for i, p in enumerate(props):
-                rng = self.cfg.domain_rand.added_mass_range
-                props[i].mass += np.random.uniform(rng[0], rng[1])
+            if env_id==0:
+                for i, p in enumerate(props):
+                    rng = self.cfg.domain_rand.added_mass_range
+                    props[i].mass += np.random.uniform(rng[0], rng[1])
             
         return props
     
@@ -512,7 +513,7 @@ class LeggedRobot(BaseTask):
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
                 
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
-    
+
         self.randomized_p_gains = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
         self.randomized_d_gains = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
         if self.cfg.domain_rand.randomize_gains:
