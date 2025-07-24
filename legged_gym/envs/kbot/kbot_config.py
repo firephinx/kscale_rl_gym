@@ -93,7 +93,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         imu_name = "imu"
         arm_names_minus_shoulder_pitch = ["left_shoulder_roll", "left_elbow_roll", "left_gripper_roll", "right_shoulder_roll", "right_elbow_roll", "right_gripper_roll"]
         #penalize_contacts_on = ["knee", "hip"]
-        terminate_after_contacts_on = ["knee", "hip", "base", "shoulder", "wrist"]
+        #terminate_after_contacts_on = ["knee", "hip", "base", "shoulder", "wrist", "Bayonet"]
         self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
         flip_visual_attachments = False
   
