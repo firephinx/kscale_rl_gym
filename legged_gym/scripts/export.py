@@ -27,6 +27,120 @@ from kinfer.rust_bindings import PyModelMetadata
 from typing import Tuple
 import math
 
+class TorchPolicyExporter(torch.nn.Module):
+    """TorchScript-friendly stateless wrapper that works for FF, GRU, and LSTM nets."""
+
+    def __init__(self, policy, normalizer=None):
+        super().__init__()
+
+        self.is_recurrent = policy.is_recurrent
+        
+        # Extract policy components
+        if hasattr(policy, "actor"):
+            self.actor = copy.deepcopy(policy.actor)
+            if self.is_recurrent:
+                self.rnn = copy.deepcopy(policy.memory_a.rnn)
+        elif hasattr(policy, "student"):
+            self.actor = copy.deepcopy(policy.student)
+            if self.is_recurrent:
+                self.rnn = copy.deepcopy(policy.memory_s.rnn)
+        else:
+            raise ValueError("Policy has neither actor nor student module.")
+
+        # Set up RNN configuration
+        if self.is_recurrent:
+            self.rnn.cpu()
+            self.num_layers = self.rnn.num_layers
+            self.hidden_size = self.rnn.hidden_size
+            rnn_name = type(self.rnn).__name__.lower()
+            
+            if "gru" in rnn_name:
+                self.rnn_type = "gru"
+                self.forward = self._forward_gru
+            elif "lstm" in rnn_name:
+                self.rnn_type = "lstm"
+                self.forward = self._forward_lstm
+                self.hidden_states = torch.zeros((2,self.num_layers,self.hidden_size))
+            else:
+                raise NotImplementedError(f"Unsupported RNN type: {rnn_name}")
+                
+            print(
+                f"[DEBUG] RNN type: {self.rnn_type}, layers: {self.num_layers}, "
+                f"hidden_size: {self.hidden_size}"
+            )
+        else:
+            self.rnn_type = "ff"
+            self.num_layers = 0
+            self.hidden_size = 0
+            self.forward = self._forward_ff
+
+        # Set up normalizer
+        self.normalizer = copy.deepcopy(normalizer) if normalizer else torch.nn.Identity()
+
+    def _forward_ff(self, obs: torch.Tensor, carry: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Feedforward forward pass (stateless for consistency)."""
+        obs = self.normalizer(obs)
+        return self.actor(obs), self.actor(obs)
+
+    def _forward_gru(self, obs: torch.Tensor, carry: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """GRU forward pass with stateless carry management."""
+        obs = self.normalizer(obs)
+        
+        # carry shape: (1, num_layers, hidden_size)
+        if carry.dim() != 3 or carry.size(0) != 1:
+            raise RuntimeError(f"Expected GRU carry shape (1, {self.num_layers}, {self.hidden_size}), got {carry.shape}")
+        
+        # Extract hidden state: (num_layers, 1, hidden_size)
+        hidden = carry[0].unsqueeze(1)
+        # Input needs to be 3D for RNN: (seq_len=1, batch_size=1, input_size)
+        x = obs.unsqueeze(0).unsqueeze(0)
+        out, new_hidden = self.rnn(x, hidden)
+        actions = self.actor(out.squeeze(0).squeeze(0))
+        # Reshape hidden back to carry format: (1, num_layers, hidden_size)
+        new_carry = new_hidden.squeeze(1).unsqueeze(0)
+        return actions, new_carry
+
+    def _forward_lstm(self, obs: torch.Tensor, carry: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        """LSTM forward pass with stateless carry management."""
+        obs = self.normalizer(obs)
+        
+        # Extract hidden and cell states: (num_layers, 1, hidden_size)
+        h = self.hidden_states[0].unsqueeze(1)
+        c = self.hidden_states[1].unsqueeze(1)
+        # Input needs to be 3D for RNN: (seq_len=1, batch_size=1, input_size)
+        x = obs.unsqueeze(0).unsqueeze(0)
+        out, (new_h, new_c) = self.rnn(x, (h, c))
+        actions = self.actor(out.squeeze(0).squeeze(0))
+        # Reshape states back to carry format: (2, num_layers, hidden_size)
+        self.hidden_states = torch.stack(
+            (new_h.squeeze(1), new_c.squeeze(1)), dim=0
+        )
+        return actions, actions
+
+    def get_carry_shape(self, num_joints: int) -> Tuple[int, ...]:
+        """Get the shape of the carry tensor for this policy."""
+        if self.rnn_type == "ff":
+            return (num_joints,)
+        elif self.rnn_type == "gru":
+            return (1, self.num_layers, self.hidden_size)
+        elif self.rnn_type == "lstm":
+            return (num_joints,)
+            #return (2, self.num_layers, self.hidden_size)
+        else:
+            raise RuntimeError(f"Unknown RNN type: {self.rnn_type}")
+
+    def get_initial_carry(self, num_joints: int) -> torch.Tensor:
+        """Get the initial (zero) carry tensor for this policy."""
+        return torch.zeros(self.get_carry_shape(num_joints))
+
+    def get_traced_module(self):
+        """Return a scripted (CPU, eval) version of this module."""
+        self.to("cpu").eval()
+        for p in self.parameters():
+            p.requires_grad_(False)
+        return torch.jit.script(self)
+
+
 args = get_args()
 env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
 
@@ -44,33 +158,27 @@ obs = env.get_observations()
 train_cfg.runner.resume = True
 ppo_runner, train_cfg = task_registry.make_alg_runner(env=env, name=args.task, args=args, train_cfg=train_cfg)
 
-policy_nn = ppo_runner.alg.actor_critic
+#olicy_nn = ppo_runner.alg.actor_critic
 
-actor_net = copy.deepcopy(policy_nn.actor).cpu().eval()
-memory_net = copy.deepcopy(policy_nn.memory_a).cpu().eval()
+try:
+    policy_nn = ppo_runner.alg.policy
+except AttributeError:
+    policy_nn = ppo_runner.alg.actor_critic
 
+# Optionally include normalizer if present
 normalizer = getattr(ppo_runner, "obs_normalizer", None)
 if normalizer is None:
     normalizer = torch.nn.Identity()
 else:
     normalizer = copy.deepcopy(normalizer).cpu().eval()
 
-class ActorWrapper(torch.nn.Module):
-    """Wraps (normalizer → actor) into a single forward pass."""
+exporter = TorchPolicyExporter(policy_nn, normalizer)
 
-    def __init__(self, actor, memory, norm):
-        super().__init__()
-        self.actor = actor
-        self.memory = memory
-        self.norm = norm
-        
-    def forward(self, obs: torch.Tensor) -> torch.Tensor:  # noqa: D401 – simple wrapper
-        return self.actor(self.memory(self.norm(obs))).squeeze()
-        
+exporter.to("cpu").eval()
+for p in exporter.parameters():
+    p.requires_grad_(False)
 
-wrapper = ActorWrapper(actor_net, memory_net, normalizer).eval()
-for p in wrapper.parameters():
-    p.requires_grad = False
+ts_policy = exporter
 
 joint_names = ['dof_left_hip_pitch_04',
                 'dof_left_hip_roll_03',
@@ -118,18 +226,62 @@ _INIT_JOINT_POS = torch.tensor(
         ]
     )
 
-num_joints = len(joint_names)
-CARRY_SHAPE: Tuple[int, ...] = (num_joints,)
+NUM_JOINTS = len(joint_names)
 NUM_COMMANDS = 3
 
-def _init_fn() -> torch.Tensor:  # noqa: D401 – concise docstring
-    """Returns the initial carry tensor (all zeros)."""
-    return torch.zeros(CARRY_SHAPE)
+# Get carry shape from the exporter
+CARRY_SHAPE = exporter.get_carry_shape(NUM_JOINTS)
+
+ACTION_SCALE = 0.25
 
 cmd_scale = torch.tensor([2.0, 2.0, 0.25])
 action_scale = torch.tensor(0.25)
 dof_pos_scale = torch.tensor(1.0)
 dof_vel_scale = torch.tensor(0.05)
+
+def construct_obs_rnn(
+    projected_gravity: torch.Tensor,
+    joint_angles: torch.Tensor,
+    joint_angular_velocities: torch.Tensor,
+    command: torch.Tensor,
+    #gyroscope: torch.Tensor,
+    carry: torch.Tensor,
+) -> torch.Tensor:
+    scaled_command = command * cmd_scale
+    offset_joint_angles = (joint_angles - _INIT_JOINT_POS) * dof_pos_scale
+    scaled_projected_gravity = projected_gravity / 9.81
+    scaled_joint_angular_velocities = joint_angular_velocities * dof_vel_scale
+    obs = torch.cat(
+        (
+            scaled_projected_gravity,
+            scaled_command,
+            offset_joint_angles,
+            scaled_joint_angular_velocities,
+            carry
+            #gyroscope,
+        ),
+        dim=-1,
+    )
+    return obs
+
+def construct_obs_ff(
+    projected_gravity: torch.Tensor,
+    joint_angles: torch.Tensor,
+    joint_angular_velocities: torch.Tensor,
+    command: torch.Tensor,
+    #gyroscope: torch.Tensor,
+    carry: torch.Tensor,
+) -> torch.Tensor:
+    obs = construct_obs_rnn(projected_gravity, joint_angles, joint_angular_velocities, command, carry) #gyroscope,
+    obs = torch.cat((obs, carry), dim=-1)
+    return obs
+
+# Recurrent or feedforward logic split out here so it doesn't get traced and err out on carry and matmul shape mismatches
+# Difference is that obs_rnn does not add the carry to the obs (holds previous action for purely feedforward policies)
+if exporter.is_recurrent:
+    construct_obs = construct_obs_rnn
+else:
+    construct_obs = construct_obs_ff
 
 def _step_fn(
     projected_gravity: torch.Tensor,
@@ -139,35 +291,32 @@ def _step_fn(
     carry: torch.Tensor,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Policy step."""
-    scaled_projected_gravity = projected_gravity / 9.81
-    cmd = command * cmd_scale
-    joint_angles = (joint_angles - _INIT_JOINT_POS) * dof_pos_scale
-    joint_angular_velocities = joint_angular_velocities * dof_vel_scale
+    obs = construct_obs(projected_gravity, joint_angles, joint_angular_velocities, command, carry)
 
-    obs = torch.cat((scaled_projected_gravity, cmd, joint_angles, joint_angular_velocities, carry), dim=-1)
-    actions = wrapper(obs)
+    actions, new_carry = ts_policy(obs, carry)
+        
+    return (actions * ACTION_SCALE) + _INIT_JOINT_POS, new_carry
+  
+def _init_fn() -> torch.Tensor:
+    return exporter.get_initial_carry(NUM_JOINTS)
 
-    return actions * action_scale + _INIT_JOINT_POS, actions
-
-step_fn = torch.jit.trace(
-    _step_fn,
-    (
-        torch.zeros(3),
-        torch.zeros(num_joints),
-        torch.zeros(num_joints),
-        torch.zeros(NUM_COMMANDS),
-        torch.zeros(*CARRY_SHAPE),
-    ),
-    check_trace=False
+step_args = (
+    torch.zeros(3),
+    torch.zeros(NUM_JOINTS),
+    torch.zeros(NUM_JOINTS),
+    torch.zeros(NUM_COMMANDS),
+    #torch.zeros(3),
+    torch.zeros(*CARRY_SHAPE),
 )
 
+step_fn = torch.jit.trace(_step_fn, step_args, check_trace=False)
 init_fn = torch.jit.trace(_init_fn, ())
 
 # ----------------------------------------------------------------------------
 # Export to ONNX (via kinfer) and package
 # ----------------------------------------------------------------------------
 
-
+#joint_names = list(env.unwrapped.scene["robot"].data.joint_names)
 metadata = PyModelMetadata(
     joint_names=joint_names,
     num_commands=NUM_COMMANDS,
