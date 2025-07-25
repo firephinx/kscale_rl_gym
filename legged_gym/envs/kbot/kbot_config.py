@@ -40,17 +40,17 @@ class KBotRoughCfg( LeggedRobotCfg ):
         resampling_time = 10. # time before command are changed[s]
         heading_command = False # if true: compute ang vel command from heading error
         class ranges:
-            lin_vel_x = [0.0, 0.0] # min max [m/s]
-            lin_vel_y = [0.0, 0.0]   # min max [m/s]
-            ang_vel_yaw = [0, 0]    # min max [rad/s]
+            lin_vel_x = [-1.0, 1.0] # min max [m/s]
+            lin_vel_y = [-1.0, 1.0]   # min max [m/s]
+            ang_vel_yaw = [-1, 1]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
         randomize_friction = True
         friction_range = [0.1, 2.0]
-        randomize_link_masses = False
+        randomize_link_masses = True
         added_mass_range = [-0.1, 0.1]
-        randomize_gains = False
+        randomize_gains = True
         randomize_gains_fraction = 0.05
         push_robots = True
         push_interval_s = 5
@@ -126,20 +126,20 @@ class KBotRoughCfg( LeggedRobotCfg ):
             action_rate = -0.005
             dof_pos_limits = -10.0
             alive = 5.0
-            feet_swing_height = 0.0 #-10.0 #-0.2
+            feet_swing_height = -20.0 #-0.2
             contact = 0.18
-            contact_no_vel = 0.0 #-0.2
+            contact_no_vel = -0.2
 
             arm_deviation = -0.5 # -0.1
             hip_deviation = -0.5
             ankle_deviation = -0.5
             ankle_pos_limits = -1.0
 
-            feet_contact_forces = -0.01 # -0.01
+            feet_contact_forces = -0.01
             flat_feet = 0.0 #-0.1 # -2.0
             feet_air_time = 0.0 #0.25
             collision = 0.0
-            foot_slip = -0.1
+            foot_slip = 0.0 #-0.1
             action_smoothness = 0.0
             knee_distance = 0.0
 
@@ -150,14 +150,14 @@ class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
         critic_hidden_dims = [32]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         # only for 'ActorCriticRecurrent':
-        rnn_type = 'lstm'
-        rnn_hidden_size = 64
-        rnn_num_layers = 1
+        # rnn_type = 'lstm'
+        # rnn_hidden_size = 64
+        # rnn_num_layers = 1
         
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):
-        policy_class_name = "ActorCriticRecurrent"
+        policy_class_name = "ActorCritic"
         max_iterations = 10000
         run_name = ''
         experiment_name = 'kbot'

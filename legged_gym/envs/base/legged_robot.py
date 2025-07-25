@@ -338,10 +338,13 @@ class LeggedRobot(BaseTask):
         """
         #pd controller
         actions_scaled = actions * self.cfg.control.action_scale
+        desired_dof_pos = actions_scaled + self.default_dof_pos
         control_type = self.cfg.control.control_type
         if control_type=="P":
             if self.cfg.domain_rand.randomize_gains:
-                torques = self.randomized_p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.randomized_d_gains*self.dof_vel
+                for i in range(self.num_actions):
+                    desired_dof_pos[:,i] = torch.clamp(desired_dof_pos[:,i], self.dof_pos_limits[i, 0], self.dof_pos_limits[i, 1])
+                torques = self.randomized_p_gains*(desired_dof_pos - self.dof_pos) - self.randomized_d_gains*self.dof_vel
             else:
                 torques = self.p_gains*(actions_scaled + self.default_dof_pos - self.dof_pos) - self.d_gains*self.dof_vel
         elif control_type=="V":
@@ -357,13 +360,16 @@ class LeggedRobot(BaseTask):
 
     def _reset_dofs(self, env_ids):
         """ Resets DOF position and velocities of selected environmments
-        Positions are randomly selected within 0.5:1.5 x default positions.
+        Positions are randomly selected within -0.5 rad to +0.5 rad of their default positions.
         Velocities are set to zero.
 
         Args:
             env_ids (List[int]): Environemnt ids
         """
-        self.dof_pos[env_ids] = self.default_dof_pos * torch_rand_float(0.5, 1.5, (len(env_ids), self.num_dof), device=self.device)
+        randomized_dof_pos = self.default_dof_pos + torch_rand_float(-0.5, 0.5, (len(env_ids), self.num_dof), device=self.device)
+        for i in range(self.num_actions):
+            randomized_dof_pos[:,i] = torch.clamp(randomized_dof_pos[:,i], self.dof_pos_limits[i, 0], self.dof_pos_limits[i, 1])
+        self.dof_pos[env_ids] = randomized_dof_pos
         self.dof_vel[env_ids] = 0.
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
