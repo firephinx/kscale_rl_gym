@@ -49,9 +49,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
         randomize_friction = True
         friction_range = [0.1, 2.0]
         randomize_link_masses = True
-        added_mass_range = [-2., 2.]
+        added_mass_range = [-0.1, 0.1]
         randomize_gains = True
-        randomize_gains_fraction = 0.1
+        randomize_gains_fraction = 0.05
         push_robots = True
         push_interval_s = 5
         max_push_vel_xy = 1.5
@@ -92,8 +92,10 @@ class KBotRoughCfg( LeggedRobotCfg ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot.urdf'
         name = "kbot"
         foot_name = 'LEG_FOOT'
+        knee_name = 'Femur'
         imu_name = "imu"
-        arm_names_minus_shoulder_pitch = ["left_shoulder_roll", "left_elbow_roll", "left_gripper_roll", "right_shoulder_roll", "right_elbow_roll", "right_gripper_roll"]
+        arm_names = ["shoulder", "elbow", "wrist"]
+        hip_names = ['hip_roll', 'hip_yaw']
         #penalize_contacts_on = ["knee", "hip"]
         #terminate_after_contacts_on = ["knee", "hip", "base", "shoulder", "wrist", "Bayonet"]
         self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
@@ -102,7 +104,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
-        only_positive_rewards = False
+        only_positive_rewards = True
+        min_dist = 0.2
+        max_dist = 0.5
 
         max_contact_force = 400  # forces above this value are penalized
 
@@ -115,19 +119,24 @@ class KBotRoughCfg( LeggedRobotCfg ):
             base_height = -20.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
-            feet_air_time = 0.0
             torques = -0.00001
-            collision = 0.0
             action_rate = -0.01
-            dof_pos_limits = -5.0
+            dof_pos_limits = -10.0
             alive = 10.0
-            hip_pos = 0.0 #-1.0
-            contact_no_vel = -2.0
-            feet_swing_height = -10.0 #-0.2
-            contact = 1.8
-            feet_contact_forces = -0.01
-            flat_feet = -1.0
+            feet_swing_height = -20.0 #-0.2
+            contact = 0.18
+            contact_no_vel = -0.2
             stable_arms = -1.0
+
+            hip_deviation = -1.0
+
+            feet_contact_forces = 0.0 # -0.01
+            flat_feet = 0.0 # -2.0
+            feet_air_time = 0.25
+            collision = 0.0
+            foot_slip = -0.1
+            action_smoothness = 0.0
+            knee_distance = 0.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
@@ -147,5 +156,6 @@ class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
         max_iterations = 10000
         run_name = ''
         experiment_name = 'kbot'
+        log_dir = 'logs/kbot/'
 
   
