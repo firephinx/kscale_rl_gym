@@ -40,17 +40,17 @@ class KBotRoughCfg( LeggedRobotCfg ):
         resampling_time = 10. # time before command are changed[s]
         heading_command = False # if true: compute ang vel command from heading error
         class ranges:
-            lin_vel_x = [-1.0, 1.0] # min max [m/s]
-            lin_vel_y = [-1.0, 1.0]   # min max [m/s]
-            ang_vel_yaw = [-1, 1]    # min max [rad/s]
+            lin_vel_x = [0.0, 0.0] # min max [m/s]
+            lin_vel_y = [0.0, 0.0]   # min max [m/s]
+            ang_vel_yaw = [0, 0]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
         randomize_friction = True
         friction_range = [0.1, 2.0]
-        randomize_link_masses = True
+        randomize_link_masses = False
         added_mass_range = [-0.1, 0.1]
-        randomize_gains = True
+        randomize_gains = False
         randomize_gains_fraction = 0.05
         push_robots = True
         push_interval_s = 5
@@ -96,6 +96,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
         imu_name = "imu"
         arm_names = ["shoulder", "elbow", "wrist"]
         hip_names = ['hip_roll', 'hip_yaw']
+        ankle_names = ['ankle']
+        knee_names = ['knee']
         #penalize_contacts_on = ["knee", "hip"]
         #terminate_after_contacts_on = ["knee", "hip", "base", "shoulder", "wrist", "Bayonet"]
         self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
@@ -109,6 +111,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         max_dist = 0.5
 
         max_contact_force = 400  # forces above this value are penalized
+        feet_swing_height = 0.1
 
         class scales( LeggedRobotCfg.rewards.scales ):
             tracking_lin_vel = 10.0
@@ -117,22 +120,24 @@ class KBotRoughCfg( LeggedRobotCfg ):
             ang_vel_xy = -0.05
             orientation = -1.0
             base_height = -20.0
-            dof_acc = -2.5e-7
-            dof_vel = -1e-3
+            dof_acc = -1e-7
+            dof_vel = -5e-4
             torques = -0.00001
-            action_rate = -0.01
+            action_rate = -0.005
             dof_pos_limits = -10.0
-            alive = 10.0
-            feet_swing_height = -20.0 #-0.2
+            alive = 5.0
+            feet_swing_height = 0.0 #-10.0 #-0.2
             contact = 0.18
-            contact_no_vel = -0.2
-            stable_arms = -1.0
+            contact_no_vel = 0.0 #-0.2
 
-            hip_deviation = -1.0
+            arm_deviation = -0.5 # -0.1
+            hip_deviation = -0.5
+            ankle_deviation = -0.5
+            ankle_pos_limits = -1.0
 
-            feet_contact_forces = 0.0 # -0.01
-            flat_feet = 0.0 # -2.0
-            feet_air_time = 0.25
+            feet_contact_forces = -0.01 # -0.01
+            flat_feet = 0.0 #-0.1 # -2.0
+            feet_air_time = 0.0 #0.25
             collision = 0.0
             foot_slip = -0.1
             action_smoothness = 0.0

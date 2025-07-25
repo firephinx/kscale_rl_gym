@@ -501,6 +501,8 @@ class LeggedRobot(BaseTask):
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         arm_indices = []
         hip_indices = []
+        knee_indices = []
+        ankle_indices = []
         for i in range(self.num_dofs):
             name = self.dof_names[i]
             for s in self.cfg.asset.arm_names:
@@ -509,6 +511,12 @@ class LeggedRobot(BaseTask):
             for s in self.cfg.asset.hip_names:
                 if s in name:
                     hip_indices.append(i)
+            for s in self.cfg.asset.knee_names:
+                if s in name:
+                    knee_indices.append(i)
+            for s in self.cfg.asset.ankle_names:
+                if s in name:
+                    ankle_indices.append(i)
             angle = self.cfg.init_state.default_joint_angles[name]
             self.default_dof_pos[i] = angle
             found = False
@@ -524,8 +532,9 @@ class LeggedRobot(BaseTask):
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
 
         self.arm_indices = torch.tensor(arm_indices, dtype=torch.long, device=self.device, requires_grad=False)
-
         self.hip_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        self.knee_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        self.ankle_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
                 
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
 
@@ -652,10 +661,6 @@ class LeggedRobot(BaseTask):
         self.feet_indices = torch.zeros(len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
         for i in range(len(feet_names)):
             self.feet_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], feet_names[i])
-
-        self.knee_indices = torch.zeros(len(feet_names), dtype=torch.long, device=self.device, requires_grad=False)
-        for i in range(len(knee_names)):
-            self.knee_indices[i] = self.gym.find_actor_rigid_body_handle(self.envs[0], self.actor_handles[0], knee_names[i])
 
         self.imu_indices = self.gym.find_actor_rigid_body_handle(
             self.envs[0], self.actor_handles[0], self.cfg.asset.imu_name
@@ -794,4 +799,26 @@ class LeggedRobot(BaseTask):
         # penalize high contact forces
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) -  self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
 
-    
+    def _reward_arm_deviation(self):
+        if self.cfg.rewards.arm_deviation_loss == 'l1':
+            return torch.sum(torch.abs(self.dof_pos[:,self.arm_indices] - self.default_dof_pos[:,self.arm_indices]), dim=1)
+        elif self.cfg.rewards.arm_deviation_loss == 'l2':
+            return torch.sum(torch.square(self.dof_pos[:,self.arm_indices] - self.default_dof_pos[:,self.arm_indices]), dim=1)
+
+    def _reward_hip_deviation(self):
+        if self.cfg.rewards.hip_deviation_loss == 'l1':
+            return torch.sum(torch.abs(self.dof_pos[:,self.hip_indices] - self.default_dof_pos[:,self.hip_indices]), dim=1)
+        elif self.cfg.rewards.hip_deviation_loss == 'l2':
+            return torch.sum(torch.square(self.dof_pos[:,self.hip_indices] - self.default_dof_pos[:,self.hip_indices]), dim=1)
+
+    def _reward_ankle_deviation(self):
+        if self.cfg.rewards.ankle_deviation_loss == 'l1':
+            return torch.sum(torch.abs(self.dof_pos[:,self.ankle_indices] - self.default_dof_pos[:,self.ankle_indices]), dim=1)
+        elif self.cfg.rewards.ankle_deviation_loss == 'l2':
+            return torch.sum(torch.square(self.dof_pos[:,self.ankle_indices] - self.default_dof_pos[:,self.ankle_indices]), dim=1)
+
+    def _reward_ankle_pos_limits(self):
+        # Penalize dof positions too close to the limit
+        out_of_limits = -(self.dof_pos[:,self.ankle_indices] - self.dof_pos_limits[self.ankle_indices, 0]).clip(max=0.) # lower limit
+        out_of_limits += (self.dof_pos[:,self.ankle_indices] - self.dof_pos_limits[self.ankle_indices, 1]).clip(min=0.)
+        return torch.sum(out_of_limits, dim=1)

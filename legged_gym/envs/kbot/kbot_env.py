@@ -42,16 +42,6 @@ class KBot(LeggedRobot):
         self.feet_pos = self.feet_state[:, :, :3]
         self.feet_quat = self.feet_state[:, :, 3:7]
         self.feet_vel = self.feet_state[:, :, 7:10]
-
-    def _init_knee(self):
-        self.knee_num = len(self.knee_indices)
- 
-        rigid_body_state = self.gym.acquire_rigid_body_state_tensor(self.sim)
-        self.rigid_body_states = gymtorch.wrap_tensor(rigid_body_state)
-        self.rigid_body_states_view = self.rigid_body_states.view(self.num_envs, -1, 13)
-        self.knee_state = self.rigid_body_states_view[:, self.knee_indices, :]
-        self.knee_pos = self.knee_state[:, :, :3]
-        self.knee_vel = self.knee_state[:, :, 7:10]
         
     def _init_buffers(self):
         super()._init_buffers()
@@ -64,17 +54,9 @@ class KBot(LeggedRobot):
         self.feet_pos = self.feet_state[:, :, :3]
         self.feet_quat = self.feet_state[:, :, 3:7]
         self.feet_vel = self.feet_state[:, :, 7:10]
-
-    def update_knee_state(self):
-        self.gym.refresh_rigid_body_state_tensor(self.sim)
-        
-        self.knee_state = self.rigid_body_states_view[:, self.knee_indices, :]
-        self.knee_pos = self.knee_state[:, :, :3]
-        self.knee_vel = self.knee_state[:, :, 7:10]
         
     def _post_physics_step_callback(self):
         self.update_feet_state()
-        self.update_knee_state()
 
         period = 0.8
         offset = 0.5
@@ -123,7 +105,7 @@ class KBot(LeggedRobot):
     
     def _reward_feet_swing_height(self):
         contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
-        pos_error = torch.square(self.feet_pos[:, :, 2] - 0.08) * ~contact
+        pos_error = torch.square(self.feet_pos[:, :, 2] - self.cfg.rewards.feet_swing_height) * ~contact
         return torch.sum(pos_error, dim=(1))
     
     def _reward_alive(self):
@@ -157,11 +139,7 @@ class KBot(LeggedRobot):
         rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
         return rp_err
 
-    def _reward_stable_arms(self):
-        return torch.sum(torch.abs(self.dof_pos[:,self.arm_indices] - self.default_dof_pos[:,self.arm_indices]), dim=1)
-
-    def _reward_hip_deviation(self):
-        return torch.sum(torch.abs(self.dof_pos[:,self.hip_indices] - self.default_dof_pos[:,self.hip_indices]), dim=1)
+    
 
     def _reward_action_smoothness(self):
         """Encourages smoothness in the robot's actions by penalizing large differences between consecutive actions.
@@ -175,22 +153,13 @@ class KBot(LeggedRobot):
         term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
         return term_1 + term_2 + term_3
 
-    def _reward_knee_distance(self):
-        """Calculates the reward based on the distance between the knee of the humanoid."""
-        knee_dist = torch.norm(self.knee_pos[:, 0, :] - self.knee_pos[:, 1, :], dim=1)
-        fd = self.cfg.rewards.min_dist
-        max_df = self.cfg.rewards.max_dist / 2
-        d_min = torch.clamp(knee_dist - fd, -0.5, 0.0)
-        d_max = torch.clamp(knee_dist - max_df, 0, 0.5)
-        return (torch.exp(-torch.abs(d_min) * 100) + torch.exp(-torch.abs(d_max) * 100)) / 2
-
     def _reward_foot_slip(self):
         """Calculates the reward for minimizing foot slip. The reward is based on the contact forces
         and the speed of the feet. A contact threshold is used to determine if the foot is in contact
         with the ground. The speed of the foot is calculated and scaled by the contact condition.
         """
         contact = self.contact_forces[:, self.feet_indices, 2] > 5.0
-        foot_speed_norm = torch.norm(self.knee_vel[:, :, :2], dim=2)
+        foot_speed_norm = torch.norm(self.feet_vel[:, :, :2], dim=2)
         rew = torch.sqrt(foot_speed_norm)
         rew *= contact
         return torch.sum(rew, dim=1)
