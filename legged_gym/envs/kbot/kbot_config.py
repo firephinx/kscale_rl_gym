@@ -35,6 +35,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
 
     class commands(LeggedRobotCfg.commands):
         curriculum = False
+        #num_curriculum_levels = 10
         max_curriculum = 1.
         num_commands = 3 # default: lin_vel_x, lin_vel_y, ang_vel_yaw
         resampling_time = 10. # time before command are changed[s]
@@ -46,6 +47,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
+        curriculum = False
+        #num_curriculum_levels = 10
         randomize_friction = True
         friction_range = [0.1, 2.0]
         randomize_link_masses = True
@@ -125,15 +128,15 @@ class KBotRoughCfg( LeggedRobotCfg ):
             torques = -0.00001
             action_rate = -0.005
             dof_pos_limits = -10.0
-            alive = 5.0
+            alive = 7.0
             feet_swing_height = -20.0 #-0.2
             contact = 0.18
             contact_no_vel = -0.2
 
-            arm_deviation = -0.5 # -0.1
-            hip_deviation = -0.5
-            ankle_deviation = -0.5
-            ankle_pos_limits = -1.0
+            arm_deviation = -1.0 # -0.1
+            hip_deviation = -1.0
+            ankle_deviation = -0.1
+            ankle_pos_limits = -10.0
 
             feet_contact_forces = -0.01
             flat_feet = 0.0 #-0.1 # -2.0
@@ -150,14 +153,14 @@ class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
         critic_hidden_dims = [32]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         # only for 'ActorCriticRecurrent':
-        # rnn_type = 'lstm'
-        # rnn_hidden_size = 64
-        # rnn_num_layers = 1
+        rnn_type = 'lstm'
+        rnn_hidden_size = 64
+        rnn_num_layers = 1
         
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):
-        policy_class_name = "ActorCritic"
+        policy_class_name = "ActorCriticRecurrent"
         max_iterations = 10000
         run_name = ''
         experiment_name = 'kbot'
