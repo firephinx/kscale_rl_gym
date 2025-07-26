@@ -63,6 +63,8 @@ if __name__ == "__main__":
 
     # define context variables
     action = np.zeros(num_actions, dtype=np.float32)
+    num_sub_actions = 10
+    sub_action = np.zeros(num_sub_actions, dtype=np.float32)
     target_dof_pos = default_angles.copy()
     obs = np.zeros(num_obs, dtype=np.float32)
 
@@ -101,10 +103,10 @@ if __name__ == "__main__":
                 # omega = d.qvel[3:6]
 
                 qj = (qj - default_angles) * dof_pos_scale
-                remapped_qj = np.concatenate((qj[15:],qj[5:15],qj[:5]))
+                remapped_qj = np.concatenate((qj[15:],qj[10:15]))
 
                 dqj = dqj * dof_vel_scale
-                remapped_dqj = np.concatenate((dqj[15:],dqj[5:15],dqj[:5]))
+                remapped_dqj = np.concatenate((dqj[15:],dqj[10:15]))
                 gravity_orientation = get_gravity_orientation(quat)
                 # omega = omega * ang_vel_scale
 
@@ -117,15 +119,15 @@ if __name__ == "__main__":
                 #obs[:3] = omega
                 obs[:3] = gravity_orientation
                 obs[3:6] = cmd * cmd_scale
-                obs[6 : 6 + num_actions] = remapped_qj
-                obs[6 + num_actions : 6 + 2 * num_actions] = remapped_dqj
-                obs[6 + 2 * num_actions : 6 + 3 * num_actions] = action
+                obs[6 : 6 + num_sub_actions] = remapped_qj
+                obs[6 + num_sub_actions : 6 + 2 * num_sub_actions] = remapped_dqj
+                obs[6 + 2 * num_sub_actions : 6 + 3 * num_sub_actions] = sub_action
                 #obs[9 + 3 * num_actions : 9 + 3 * num_actions + 2] = np.array([sin_phase, cos_phase])
                 obs_tensor = torch.from_numpy(obs).unsqueeze(0)
                 # policy inference
-                action = policy(obs_tensor).detach().numpy().squeeze()
+                sub_action = policy(obs_tensor).detach().numpy().squeeze()
 
-                remapped_actions = np.concatenate((action[15:],action[5:15],action[:5]))
+                remapped_actions = np.concatenate((np.zeros(10),sub_action[5:],sub_action[:5]))
                 target_dof_pos = remapped_actions * action_scale + default_angles
 
             # Pick up changes to the physics state, apply perturbations, update options from GUI.

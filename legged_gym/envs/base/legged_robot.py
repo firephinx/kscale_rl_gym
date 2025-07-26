@@ -267,6 +267,7 @@ class LeggedRobot(BaseTask):
         """
         if env_id==0:
             self.dof_pos_limits = torch.zeros(self.num_dof, 2, dtype=torch.float, device=self.device, requires_grad=False)
+            self.soft_dof_pos_limits = torch.zeros(self.num_dof, 2, dtype=torch.float, device=self.device, requires_grad=False)
             self.dof_vel_limits = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
             self.torque_limits = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
             for i in range(len(props)):
@@ -277,8 +278,11 @@ class LeggedRobot(BaseTask):
                 # soft limits
                 m = (self.dof_pos_limits[i, 0] + self.dof_pos_limits[i, 1]) / 2
                 r = self.dof_pos_limits[i, 1] - self.dof_pos_limits[i, 0]
-                self.dof_pos_limits[i, 0] = m - 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
-                self.dof_pos_limits[i, 1] = m + 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
+                self.soft_dof_pos_limits[i, 0] = m - 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
+                self.soft_dof_pos_limits[i, 1] = m + 0.5 * r * self.cfg.rewards.soft_dof_pos_limit
+                self.dof_pos_limits[i, 0] = m - 0.5 * r * 0.95
+                self.dof_pos_limits[i, 1] = m + 0.5 * r * 0.95
+            print(self.dof_pos_limits)
         return props
 
     def _process_rigid_body_props(self, props, env_id):
@@ -366,10 +370,10 @@ class LeggedRobot(BaseTask):
         Args:
             env_ids (List[int]): Environemnt ids
         """
-        randomized_dof_pos = self.default_dof_pos + torch_rand_float(-0.5, 0.5, (len(env_ids), self.num_dof), device=self.device)
+        randomized_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device) + torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
         for i in range(self.num_actions):
             randomized_dof_pos[:,i] = torch.clamp(randomized_dof_pos[:,i], self.dof_pos_limits[i, 0], self.dof_pos_limits[i, 1])
-        self.dof_pos[env_ids] = randomized_dof_pos
+        self.dof_pos[env_ids] = 0. #torch.zeros((len(env_ids), self.num_dof), device=self.device) #randomized_dof_pos
         self.dof_vel[env_ids] = 0.
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
@@ -511,6 +515,7 @@ class LeggedRobot(BaseTask):
         ankle_indices = []
         for i in range(self.num_dofs):
             name = self.dof_names[i]
+            print(name)
             # for s in self.cfg.asset.arm_names:
             #     if s in name:
             #         arm_indices.append(i)
@@ -539,8 +544,8 @@ class LeggedRobot(BaseTask):
 
         #self.arm_indices = torch.tensor(arm_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.hip_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
-        self.knee_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
-        self.ankle_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        self.knee_indices = torch.tensor(knee_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        self.ankle_indices = torch.tensor(ankle_indices, dtype=torch.long, device=self.device, requires_grad=False)
                 
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
 
@@ -756,8 +761,8 @@ class LeggedRobot(BaseTask):
     
     def _reward_dof_pos_limits(self):
         # Penalize dof positions too close to the limit
-        out_of_limits = -(self.dof_pos - self.dof_pos_limits[:, 0]).clip(max=0.) # lower limit
-        out_of_limits += (self.dof_pos - self.dof_pos_limits[:, 1]).clip(min=0.)
+        out_of_limits = -(self.dof_pos - self.soft_dof_pos_limits[:, 0]).clip(max=0.) # lower limit
+        out_of_limits += (self.dof_pos - self.soft_dof_pos_limits[:, 1]).clip(min=0.)
         return torch.sum(out_of_limits, dim=1)
 
     def _reward_dof_vel_limits(self):
@@ -825,6 +830,6 @@ class LeggedRobot(BaseTask):
 
     def _reward_ankle_pos_limits(self):
         # Penalize dof positions too close to the limit
-        out_of_limits = -(self.dof_pos[:,self.ankle_indices] - self.dof_pos_limits[self.ankle_indices, 0]).clip(max=0.) # lower limit
-        out_of_limits += (self.dof_pos[:,self.ankle_indices] - self.dof_pos_limits[self.ankle_indices, 1]).clip(min=0.)
+        out_of_limits = -(self.dof_pos[:,self.ankle_indices] - self.soft_dof_pos_limits[self.ankle_indices, 0]).clip(max=0.) # lower limit
+        out_of_limits += (self.dof_pos[:,self.ankle_indices] - self.soft_dof_pos_limits[self.ankle_indices, 1]).clip(min=0.)
         return torch.sum(out_of_limits, dim=1)

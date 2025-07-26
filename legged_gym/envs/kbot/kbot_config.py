@@ -44,6 +44,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
+            # lin_vel_x = [0.0, 0.0] # min max [m/s]
+            # lin_vel_y = [0.0, 0.0]   # min max [m/s]
+            # ang_vel_yaw = [0, 0]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -110,15 +113,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
         only_positive_rewards = True
-        min_dist = 0.2
-        max_dist = 0.5
 
         max_contact_force = 400  # forces above this value are penalized
-        feet_swing_height = 0.1
+        feet_swing_height = 0.2
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            tracking_lin_vel = 10.0
-            tracking_ang_vel = 0.5
+            tracking_lin_vel = 2.0
+            tracking_ang_vel = 1.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
@@ -126,15 +127,15 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_acc = -1e-7
             dof_vel = -5e-4
             torques = -0.00001
-            action_rate = -0.005
+            action_rate = -0.01
             dof_pos_limits = -10.0
-            alive = 7.0
+            alive = 1.0
             feet_swing_height = -20.0 #-0.2
             contact = 0.18
             contact_no_vel = -0.2
 
             #arm_deviation = -1.0 # -0.1
-            hip_deviation = -1.0
+            hip_deviation = -2.0
             ankle_deviation = -0.1
             ankle_pos_limits = -10.0
 
@@ -144,13 +145,12 @@ class KBotRoughCfg( LeggedRobotCfg ):
             collision = 0.0
             foot_slip = 0.0 #-0.1
             action_smoothness = 0.0
-            knee_distance = 0.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
         init_noise_std = 0.8
-        actor_hidden_dims = [32]
-        critic_hidden_dims = [32]
+        actor_hidden_dims = [512, 256, 128]
+        critic_hidden_dims = [512, 256, 12]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         # only for 'ActorCriticRecurrent':
         rnn_type = 'lstm'
