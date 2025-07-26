@@ -11,27 +11,27 @@ class KBotRoughCfg( LeggedRobotCfg ):
            'dof_left_hip_yaw_03': 0.,
            'dof_left_knee_04': math.radians(50.0),
            'dof_left_ankle_02': math.radians(-30.0),   
-           'dof_left_shoulder_pitch_03' : 0.,        
-           'dof_left_shoulder_roll_03': math.radians(10.0),
-           'dof_left_shoulder_yaw_02': 0.,
-           'dof_left_elbow_02': math.radians(-90.0),
-           'dof_left_wrist_00': 0.,
+        #    'dof_left_shoulder_pitch_03' : 0.,        
+        #    'dof_left_shoulder_roll_03': math.radians(10.0),
+        #    'dof_left_shoulder_yaw_02': 0.,
+        #    'dof_left_elbow_02': math.radians(-90.0),
+        #    'dof_left_wrist_00': 0.,
            'dof_right_hip_pitch_04' : math.radians(-20.0),
            'dof_right_hip_roll_03': 0.,
            'dof_right_hip_yaw_03': 0.,
            'dof_right_knee_04': math.radians(-50.0),
            'dof_right_ankle_02': math.radians(30.0),
-           'dof_right_shoulder_pitch_03' : 0.,   
-           'dof_right_shoulder_roll_03': math.radians(-10.0),
-           'dof_right_shoulder_yaw_02': 0.,
-           'dof_right_elbow_02': math.radians(90.0),
-           'dof_right_wrist_00': 0.,
+        #    'dof_right_shoulder_pitch_03' : 0.,   
+        #    'dof_right_shoulder_roll_03': math.radians(-10.0),
+        #    'dof_right_shoulder_yaw_02': 0.,
+        #    'dof_right_elbow_02': math.radians(90.0),
+        #    'dof_right_wrist_00': 0.,
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 66
-        num_privileged_obs = 74
-        num_actions = 20
+        num_observations = 36
+        num_privileged_obs = 44
+        num_actions = 10
 
     class commands(LeggedRobotCfg.commands):
         curriculum = False
@@ -69,22 +69,22 @@ class KBotRoughCfg( LeggedRobotCfg ):
                      'hip_yaw': 100,
                      'knee': 150,
                      'ankle': 40,
-                     'shoulder_pitch': 100,
-                     'shoulder_roll': 100,
-                     'shoulder_yaw': 40,
-                     'elbow': 40,
-                     'wrist': 20,
+                    #  'shoulder_pitch': 100,
+                    #  'shoulder_roll': 100,
+                    #  'shoulder_yaw': 40,
+                    #  'elbow': 40,
+                    #  'wrist': 20,
                      }  # [N*m/rad]
         damping = {  'hip_pitch': 2,
                      'hip_roll': 26.387,
                      'hip_yaw': 3.419,
                      'knee': 8.654,
                      'ankle': 0.99,
-                     'shoulder_pitch': 8.284,
-                     'shoulder_roll': 8.257,
-                     'shoulder_yaw': 0.945,
-                     'elbow':1.266,
-                     'wrist': 0.295
+                    #  'shoulder_pitch': 8.284,
+                    #  'shoulder_roll': 8.257,
+                    #  'shoulder_yaw': 0.945,
+                    #  'elbow':1.266,
+                    #  'wrist': 0.295
                      }  # [N*m/rad]  # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
@@ -92,12 +92,12 @@ class KBotRoughCfg( LeggedRobotCfg ):
         decimation = 4
 
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/kbot_10dof.urdf'
         name = "kbot"
         foot_name = 'LEG_FOOT'
         knee_name = 'Femur'
         imu_name = "imu"
-        arm_names = ["shoulder", "elbow", "wrist"]
+        #arm_names = ["shoulder", "elbow", "wrist"]
         hip_names = ['hip_roll', 'hip_yaw']
         ankle_names = ['ankle']
         knee_names = ['knee']
@@ -133,7 +133,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             contact = 0.18
             contact_no_vel = -0.2
 
-            arm_deviation = -1.0 # -0.1
+            #arm_deviation = -1.0 # -0.1
             hip_deviation = -1.0
             ankle_deviation = -0.1
             ankle_pos_limits = -10.0

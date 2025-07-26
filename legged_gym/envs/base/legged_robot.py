@@ -505,15 +505,15 @@ class LeggedRobot(BaseTask):
 
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
-        arm_indices = []
+        #arm_indices = []
         hip_indices = []
         knee_indices = []
         ankle_indices = []
         for i in range(self.num_dofs):
             name = self.dof_names[i]
-            for s in self.cfg.asset.arm_names:
-                if s in name:
-                    arm_indices.append(i)
+            # for s in self.cfg.asset.arm_names:
+            #     if s in name:
+            #         arm_indices.append(i)
             for s in self.cfg.asset.hip_names:
                 if s in name:
                     hip_indices.append(i)
@@ -537,7 +537,7 @@ class LeggedRobot(BaseTask):
                 if self.cfg.control.control_type in ["P", "V"]:
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
 
-        self.arm_indices = torch.tensor(arm_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        #self.arm_indices = torch.tensor(arm_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.hip_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.knee_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.ankle_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
