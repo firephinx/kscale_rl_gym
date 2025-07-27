@@ -55,6 +55,12 @@ class LeggedRobot(BaseTask):
 
         clip_actions = self.cfg.normalization.clip_actions
         self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
+
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            self.action_queue[:, 1:] = self.action_queue[:, :-1].clone()
+            self.action_queue[:, 0] = actions.clone()
+            actions = self.action_queue[torch.arange(self.num_envs), self.action_delay].clone()
+
         # step physics and render each frame
         self.render()
         for _ in range(self.cfg.control.decimation):
@@ -176,6 +182,12 @@ class LeggedRobot(BaseTask):
 
         self.rpy[env_ids] = get_euler_xyz_in_tensor(self.base_quat[env_ids])
         self.projected_gravity[env_ids] = quat_rotate_inverse(self.base_quat[env_ids], self.gravity_vec[env_ids])
+
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            self.action_queue[env_ids] *= 0.
+            self.action_queue[env_ids] = 0.
+            self.action_delay[env_ids] = torch.randint(self.cfg.domain_rand.ctrl_delay_step_range[0], 
+                                              self.cfg.domain_rand.ctrl_delay_step_range[1]+1, (len(env_ids),), device=self.device, requires_grad=False)
     
     def compute_reward(self):
         """ Compute rewards
@@ -295,9 +307,7 @@ class LeggedRobot(BaseTask):
         # randomize link masses
         if self.cfg.domain_rand.randomize_link_masses:
             for i, p in enumerate(props):
-                rng = self.cfg.domain_rand.added_mass_range
-                props[i].mass += np.random.uniform(rng[0], rng[1])
-                props[i].mass = max(0.1, props[i].mass)
+                props[i].mass = np.random.uniform((1.0 - self.cfg.domain_rand.randomize_link_masses_fraction) * props[i].mass, (1.0 + self.cfg.domain_rand.randomize_link_masses_fraction) * props[i].mass)
             
         return props
     
@@ -370,10 +380,11 @@ class LeggedRobot(BaseTask):
         Args:
             env_ids (List[int]): Environemnt ids
         """
-        randomized_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device) + torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
+        #randomized_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device) + torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
+        randomized_dof_pos = self.default_dof_pos + torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
         for i in range(self.num_actions):
             randomized_dof_pos[:,i] = torch.clamp(randomized_dof_pos[:,i], self.dof_pos_limits[i, 0], self.dof_pos_limits[i, 1])
-        self.dof_pos[env_ids] = 0. #torch.zeros((len(env_ids), self.num_dof), device=self.device) #randomized_dof_pos
+        self.dof_pos[env_ids] = 0.#randomized_dof_pos #torch.zeros((len(env_ids), self.num_dof), device=self.device) #randomized_dof_pos
         self.dof_vel[env_ids] = 0.
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)
@@ -555,6 +566,11 @@ class LeggedRobot(BaseTask):
             for i in range(self.num_dofs):
                 self.randomized_p_gains[:,i] = torch_rand_float((1-self.cfg.domain_rand.randomize_gains_fraction) * self.p_gains[i], (1+self.cfg.domain_rand.randomize_gains_fraction) * self.p_gains[i], (self.num_envs,1), device=self.device).squeeze(1)
                 self.randomized_d_gains[:,i] = torch_rand_float((1-self.cfg.domain_rand.randomize_gains_fraction) * self.d_gains[i], (1+self.cfg.domain_rand.randomize_gains_fraction) * self.d_gains[i], (self.num_envs,1), device=self.device).squeeze(1)
+
+        if self.cfg.domain_rand.randomize_ctrl_delay:
+            self.action_queue = torch.zeros(self.num_envs, self.cfg.domain_rand.ctrl_delay_step_range[1]+1, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+            self.action_delay = torch.randint(self.cfg.domain_rand.ctrl_delay_step_range[0], 
+                                              self.cfg.domain_rand.ctrl_delay_step_range[1]+1, (self.num_envs,), device=self.device, requires_grad=False)
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
@@ -739,6 +755,10 @@ class LeggedRobot(BaseTask):
         # Penalize torques
         return torch.sum(torch.square(self.torques), dim=1)
 
+    def _reward_torque_limits(self):
+        # penalize torques too close to the limit
+        return torch.sum((torch.abs(self.torques) - self.torque_limits*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
+
     def _reward_dof_vel(self):
         # Penalize dof velocities
         return torch.sum(torch.square(self.dof_vel), dim=1)
@@ -769,10 +789,6 @@ class LeggedRobot(BaseTask):
         # Penalize dof velocities too close to the limit
         # clip to max error = 1 rad/s per joint to avoid huge penalties
         return torch.sum((torch.abs(self.dof_vel) - self.dof_vel_limits*self.cfg.rewards.soft_dof_vel_limit).clip(min=0., max=1.), dim=1)
-
-    def _reward_torque_limits(self):
-        # penalize torques too close to the limit
-        return torch.sum((torch.abs(self.torques) - self.torque_limits*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
 
     def _reward_tracking_lin_vel(self):
         # Tracking of linear velocity commands (xy axes)

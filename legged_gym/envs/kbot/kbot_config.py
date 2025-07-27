@@ -43,7 +43,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         class ranges:
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
-            ang_vel_yaw = [-1, 1]    # min max [rad/s]
+            ang_vel_yaw = [0,0]    # min max [rad/s]
             # lin_vel_x = [0.0, 0.0] # min max [m/s]
             # lin_vel_y = [0.0, 0.0]   # min max [m/s]
             # ang_vel_yaw = [0, 0]    # min max [rad/s]
@@ -53,14 +53,17 @@ class KBotRoughCfg( LeggedRobotCfg ):
         curriculum = False
         #num_curriculum_levels = 10
         randomize_friction = True
-        friction_range = [0.1, 2.0]
+        friction_range = [0.1, 1.5]
         randomize_link_masses = True
-        added_mass_range = [-0.1, 0.1]
+        randomize_link_masses_fraction = 0.3
         randomize_gains = True
-        randomize_gains_fraction = 0.05
+        randomize_gains_fraction = 0.25
         push_robots = True
         push_interval_s = 5
-        max_push_vel_xy = 1.5
+        max_push_vel_xy = 1
+
+        randomize_ctrl_delay = True
+        ctrl_delay_step_range = [1, 3]
       
 
     class control( LeggedRobotCfg.control ):
@@ -114,53 +117,62 @@ class KBotRoughCfg( LeggedRobotCfg ):
         base_height_target = 1.0
         only_positive_rewards = True
 
-        max_contact_force = 400  # forces above this value are penalized
-        feet_swing_height = 0.2
+        max_contact_force = 700  # forces above this value are penalized
+        feet_height_target = 0.2
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            tracking_lin_vel = 2.0
+            torques = -9e-5*1.25
+            torque_limits = -2e-1*1.25
+            dof_acc = -8.4e-6*1.25 #-8.4e-6   -4.2e-7 #-3.5e-8
+            dof_vel = -0.003*1.25 # -0.003
+            dof_pos_limits = -100.0*1.25
+
+            slippage = -3.0*1.25
+            feet_ori = -1.0*1.25
+
+            tracking_lin_vel = 10.0
             tracking_ang_vel = 1.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
-            base_height = -20.0
-            dof_acc = -1e-7
-            dof_vel = -5e-4
-            torques = -0.00001
-            action_rate = -0.01
-            dof_pos_limits = -10.0
-            alive = 1.0
-            feet_swing_height = -20.0 #-0.2
+            base_height = -10.0
+            dof_acc = -2.5e-7
+            dof_vel = -1e-3
+            #torques = -0.00001
+            action_rate = -0.9*1.25
+            
+            alive = 8.0
+            feet_height = -20.0 #-0.2
             contact = 0.18
             contact_no_vel = -0.2
 
             #arm_deviation = -1.0 # -0.1
-            hip_deviation = -2.0
-            ankle_deviation = -0.1
-            ankle_pos_limits = -10.0
+            hip_deviation = -3.0
+            #ankle_deviation = -0.1
+            #ankle_pos_limits = -10.0
 
-            feet_contact_forces = -0.01
-            flat_feet = 0.0 #-0.1 # -2.0
-            feet_air_time = 0.0 #0.25
-            collision = 0.0
-            foot_slip = 0.0 #-0.1
-            action_smoothness = 0.0
+            feet_contact_forces = -0.10*1.25
+            #flat_feet = 0.0 #-0.1 # -2.0
+            feet_air_time = 100.0*1.25
+            #collision = 0.0
+            #foot_slip = -0.1
+            #action_smoothness = 0.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
         init_noise_std = 0.8
-        actor_hidden_dims = [512, 256, 128]
-        critic_hidden_dims = [512, 256, 12]
+        actor_hidden_dims = [256, 128]
+        critic_hidden_dims = [256, 128]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         # only for 'ActorCriticRecurrent':
-        rnn_type = 'lstm'
-        rnn_hidden_size = 64
-        rnn_num_layers = 1
+        # rnn_type = 'lstm'
+        # rnn_hidden_size = 64
+        # rnn_num_layers = 1
         
     class algorithm( LeggedRobotCfgPPO.algorithm ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):
-        policy_class_name = "ActorCriticRecurrent"
+        policy_class_name = "ActorCritic"
         max_iterations = 10000
         run_name = ''
         experiment_name = 'kbot'

@@ -39,6 +39,7 @@ def play(args):
 
     for i in range(10*int(env.max_episode_length)):
         actions = policy(obs.detach())
+        #print(ppo_runner.alg.actor_critic.memory_a.hidden_states)
         obs, _, rews, dones, infos = env.step(actions.detach())
 
 if __name__ == '__main__':

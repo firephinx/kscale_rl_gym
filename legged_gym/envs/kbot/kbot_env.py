@@ -103,10 +103,10 @@ class KBot(LeggedRobot):
             res += ~(contact ^ is_stance)
         return res
     
-    def _reward_feet_swing_height(self):
-        contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
-        pos_error = torch.square(self.feet_pos[:, :, 2] - self.cfg.rewards.feet_swing_height) * ~contact
-        return torch.sum(pos_error, dim=(1))
+    # def _reward_feet_swing_height(self):
+    #     contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
+    #     pos_error = torch.square(self.feet_pos[:, :, 2] - self.cfg.rewards.feet_swing_height) * ~contact
+    #     return torch.sum(pos_error, dim=(1))
     
     def _reward_alive(self):
         # Reward for staying alive
@@ -153,13 +153,20 @@ class KBot(LeggedRobot):
         term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
         return term_1 + term_2 + term_3
 
-    def _reward_foot_slip(self):
-        """Calculates the reward for minimizing foot slip. The reward is based on the contact forces
-        and the speed of the feet. A contact threshold is used to determine if the foot is in contact
-        with the ground. The speed of the foot is calculated and scaled by the contact condition.
-        """
-        contact = self.contact_forces[:, self.feet_indices, 2] > 5.0
-        foot_speed_norm = torch.norm(self.feet_vel[:, :, :2], dim=2)
-        rew = torch.sqrt(foot_speed_norm)
-        rew *= contact
-        return torch.sum(rew, dim=1)
+
+    def _reward_feet_height(self):
+        # Penalize base height away from target
+        feet_height = self.feet_pos[:, :, 2]
+        dif = torch.abs(feet_height - self.cfg.rewards.feet_height_target)
+        dif = torch.min(dif, dim=1).values # [num_env], # select the foot closer to target 
+        return torch.clip(dif - 0.02, min=0.) # target - 0.02 ~ target + 0.02 is acceptable 
+
+    def _reward_feet_ori(self):
+        left_quat = self.feet_quat[:, 0, :]
+        left_gravity = quat_rotate_inverse(left_quat, self.gravity_vec)
+        right_quat = self.feet_quat[:, 1, :]
+        right_gravity = quat_rotate_inverse(right_quat, self.gravity_vec)
+        return torch.sum(torch.square(left_gravity[:, :2]), dim=1)**0.5 + torch.sum(torch.square(right_gravity[:, :2]), dim=1)**0.5 
+
+    def _reward_slippage(self):
+        return torch.sum(torch.norm(self.feet_vel, dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) > 1.), dim=1)
