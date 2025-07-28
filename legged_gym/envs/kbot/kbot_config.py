@@ -29,7 +29,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 36
+        num_observations = 39
         num_privileged_obs = 44
         num_actions = 10
 
@@ -130,7 +130,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             slippage = -3.0*1.25
             feet_ori = -1.0*1.25
 
-            tracking_lin_vel = 10.0
+            tracking_lin_vel = 5.0
             tracking_ang_vel = 1.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
@@ -138,17 +138,17 @@ class KBotRoughCfg( LeggedRobotCfg ):
             base_height = -10.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
-            action_rate = -1.0
+            action_rate = -0.1
             
-            alive = 10.0
+            alive = 5.0
             feet_height = -20.0 #-0.2
             stand_still = -100.0
             #contact = 0.18
             contact_no_vel = -0.2
-            contact_stand_still = 100
+            contact_stand_still = 10
 
             hip_deviation = -3.0
-            feet_air_time = 100.0
+            feet_air_time = 10.0
             feet_contact_forces = -0.10*1.25
             stumble = -1000.0*1.25
 

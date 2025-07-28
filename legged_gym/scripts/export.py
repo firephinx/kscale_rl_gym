@@ -285,27 +285,29 @@ cmd_scale = torch.tensor([2.0, 2.0, 0.25])
 action_scale = torch.tensor(0.25)
 dof_pos_scale = torch.tensor(1.0)
 dof_vel_scale = torch.tensor(0.05)
+ang_vel_scale = 0.25
 
 def construct_obs_rnn(
     projected_gravity: torch.Tensor,
     joint_angles: torch.Tensor,
     joint_angular_velocities: torch.Tensor,
     command: torch.Tensor,
-    #gyroscope: torch.Tensor,
+    gyroscope: torch.Tensor,
     carry: torch.Tensor,
 ) -> torch.Tensor:
+    scaled_projected_gravity = projected_gravity / 9.81
+    scaled_gyro = gyroscope * ang_vel_scale
     scaled_command = command * cmd_scale
     offset_joint_angles = (joint_angles - _INIT_JOINT_POS) * dof_pos_scale
-    scaled_projected_gravity = projected_gravity / 9.81
     scaled_joint_angular_velocities = joint_angular_velocities * dof_vel_scale
     obs = torch.cat(
         (
             scaled_projected_gravity,
+            scaled_gyro,
             scaled_command,
             offset_joint_angles[:10],
             scaled_joint_angular_velocities[:10],
             carry
-            #gyroscope,
         ),
         dim=-1,
     )
@@ -316,10 +318,10 @@ def construct_obs_ff(
     joint_angles: torch.Tensor,
     joint_angular_velocities: torch.Tensor,
     command: torch.Tensor,
-    #gyroscope: torch.Tensor,
+    gyroscope: torch.Tensor,
     carry: torch.Tensor,
 ) -> torch.Tensor:
-    obs = construct_obs_rnn(projected_gravity, joint_angles, joint_angular_velocities, command, carry) #gyroscope,
+    obs = construct_obs_rnn(projected_gravity, joint_angles, joint_angular_velocities, command, gyroscope, carry)
     #obs = torch.cat((obs, carry), dim=-1)
     return obs
 
@@ -335,10 +337,11 @@ def _step_fn(
     joint_angles: torch.Tensor,
     joint_angular_velocities: torch.Tensor,
     command: torch.Tensor,
+    gyroscope: torch.Tensor,
     carry: torch.Tensor,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """Policy step."""
-    obs = construct_obs(projected_gravity, joint_angles, joint_angular_velocities, command, carry)
+    obs = construct_obs(projected_gravity, joint_angles, joint_angular_velocities, command, gyroscope, carry)
 
     actions, new_carry = ts_policy(obs, carry)
     new_actions = torch.cat((actions, torch.zeros(10)))
@@ -353,11 +356,11 @@ def _init_fn() -> torch.Tensor:
     return exporter.get_initial_carry(NUM_SUB_JOINTS)
 
 step_args = (
-    torch.zeros(3),
+    torch.zeros(3), # projected_gravity
     torch.zeros(NUM_JOINTS),
     torch.zeros(NUM_JOINTS),
-    torch.zeros(NUM_COMMANDS),
-    #torch.zeros(3),
+    torch.zeros(NUM_COMMANDS), 
+    torch.zeros(3), # gyroscope
     torch.zeros(*CARRY_SHAPE),
 )
 
