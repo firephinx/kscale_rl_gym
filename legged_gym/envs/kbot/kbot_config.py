@@ -40,6 +40,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         num_commands = 3 # default: lin_vel_x, lin_vel_y, ang_vel_yaw
         resampling_time = 10. # time before command are changed[s]
         heading_command = False # if true: compute ang vel command from heading error
+        bias_percentage_stand_still = 0.3
         class ranges:
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
@@ -61,7 +62,6 @@ class KBotRoughCfg( LeggedRobotCfg ):
         push_robots = True
         push_interval_s = 5
         max_push_vel_xy = 1
-
         randomize_ctrl_delay = True
         ctrl_delay_step_range = [1, 3]
       
@@ -130,7 +130,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             slippage = -3.0*1.25
             feet_ori = -1.0*1.25
 
-            tracking_lin_vel = 5.0
+            tracking_lin_vel = 10.0
             tracking_ang_vel = 1.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
@@ -140,16 +140,17 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_vel = -1e-3
             action_rate = -1.0
             
-            alive = 5.0
+            alive = 10.0
             feet_height = -20.0 #-0.2
             stand_still = -100.0
             #contact = 0.18
-            #contact_no_vel = -0.2
-            #contact_stand_still = 100
+            contact_no_vel = -0.2
+            contact_stand_still = 100
 
             hip_deviation = -3.0
             feet_air_time = 100.0
             feet_contact_forces = -0.10*1.25
+            stumble = -1000.0*1.25
 
             #arm_deviation = -1.0 # -0.1
             #ankle_deviation = -0.1

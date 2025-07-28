@@ -28,7 +28,7 @@
     <limit effort="60" velocity="18.849" lower="-3.141593" upper="1.396263"/>
     <axis xyz="0 0 1"/>
   </joint>
-  <joint name="frame_imu_site" type="fixed">
+  <joint name="frame_imu_site" type="fixed" dont_collapse="true">
     <origin xyz="0.093118 -0.000341 0.188248" rpy="0 0 -1.570796"/>
     <parent link="Torso_Side_Right"/>
     <child link="imu"/>

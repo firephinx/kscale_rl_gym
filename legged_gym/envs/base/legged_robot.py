@@ -128,6 +128,7 @@ class LeggedRobot(BaseTask):
         self.last_actions[:] = self.actions[:]
         self.last_dof_vel[:] = self.dof_vel[:]
         self.last_root_vel[:] = self.root_states[:, 7:13]
+        self.last_rigid_state[:] = self.rigid_state[:]
 
     def check_termination(self):
         """ Check if environments need to be reset
@@ -474,6 +475,7 @@ class LeggedRobot(BaseTask):
         actor_root_state = self.gym.acquire_actor_root_state_tensor(self.sim)
         dof_state_tensor = self.gym.acquire_dof_state_tensor(self.sim)
         net_contact_forces = self.gym.acquire_net_contact_force_tensor(self.sim)
+        rigid_body_state = self.gym.acquire_rigid_body_state_tensor(self.sim)
         self.gym.refresh_dof_state_tensor(self.sim)
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
@@ -483,6 +485,11 @@ class LeggedRobot(BaseTask):
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.dof_pos = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 0]
         self.dof_vel = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 1]
+
+        self.rigid_state = gymtorch.wrap_tensor(rigid_body_state)
+        self.rigid_state = self.rigid_state.view(self.num_envs, -1, 13)
+        self.last_rigid_state = torch.zeros_like(self.rigid_state)
+
         if self.imu_indices:
             self.base_quat = self.rigid_state[:, self.imu_indices, 3:7]
         else:
@@ -643,6 +650,7 @@ class LeggedRobot(BaseTask):
 
         # save body names from the asset
         body_names = self.gym.get_asset_rigid_body_names(robot_asset)
+        print(body_names)
         self.dof_names = self.gym.get_asset_dof_names(robot_asset)
         self.num_bodies = len(body_names)
         self.num_dofs = len(self.dof_names)
