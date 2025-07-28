@@ -384,7 +384,7 @@ class LeggedRobot(BaseTask):
         randomized_dof_pos = self.default_dof_pos + torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
         for i in range(self.num_actions):
             randomized_dof_pos[:,i] = torch.clamp(randomized_dof_pos[:,i], self.dof_pos_limits[i, 0], self.dof_pos_limits[i, 1])
-        self.dof_pos[env_ids] = 0.#randomized_dof_pos #torch.zeros((len(env_ids), self.num_dof), device=self.device) #randomized_dof_pos
+        self.dof_pos[env_ids] = randomized_dof_pos #torch.zeros((len(env_ids), self.num_dof), device=self.device) #randomized_dof_pos
         self.dof_vel[env_ids] = 0.
 
         env_ids_int32 = env_ids.to(dtype=torch.int32)

@@ -43,7 +43,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         class ranges:
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
-            ang_vel_yaw = [0,0]    # min max [rad/s]
+            ang_vel_yaw = [-1,1]    # min max [rad/s]
             # lin_vel_x = [0.0, 0.0] # min max [m/s]
             # lin_vel_y = [0.0, 0.0]   # min max [m/s]
             # ang_vel_yaw = [0, 0]    # min max [rad/s]
@@ -117,8 +117,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
         base_height_target = 1.0
         only_positive_rewards = True
 
-        max_contact_force = 700  # forces above this value are penalized
-        feet_height_target = 0.2
+        max_contact_force = 500  # forces above this value are penalized
+        feet_height_target = 0.15
 
         class scales( LeggedRobotCfg.rewards.scales ):
             torques = -9e-5*1.25
@@ -130,7 +130,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             slippage = -3.0*1.25
             feet_ori = -1.0*1.25
 
-            tracking_lin_vel = 10.0
+            tracking_lin_vel = 5.0
             tracking_ang_vel = 1.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
@@ -138,22 +138,23 @@ class KBotRoughCfg( LeggedRobotCfg ):
             base_height = -10.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
-            #torques = -0.00001
-            action_rate = -0.9*1.25
+            action_rate = -1.0
             
-            alive = 8.0
+            alive = 5.0
             feet_height = -20.0 #-0.2
-            contact = 0.18
-            contact_no_vel = -0.2
+            stand_still = -100.0
+            #contact = 0.18
+            #contact_no_vel = -0.2
+            #contact_stand_still = 100
+
+            hip_deviation = -3.0
+            feet_air_time = 100.0
+            feet_contact_forces = -0.10*1.25
 
             #arm_deviation = -1.0 # -0.1
-            hip_deviation = -3.0
             #ankle_deviation = -0.1
             #ankle_pos_limits = -10.0
-
-            feet_contact_forces = -0.10*1.25
             #flat_feet = 0.0 #-0.1 # -2.0
-            feet_air_time = 100.0*1.25
             #collision = 0.0
             #foot_slip = -0.1
             #action_smoothness = 0.0

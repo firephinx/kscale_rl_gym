@@ -97,16 +97,18 @@ class KBot(LeggedRobot):
         
     def _reward_contact(self):
         res = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+
         for i in range(self.feet_num):
-            is_stance = self.leg_phase[:, i] < 0.55
+            is_stance = (self.leg_phase[:, i] < 0.55) 
             contact = self.contact_forces[:, self.feet_indices[i], 2] > 1
-            res += ~(contact ^ is_stance)
+            res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
         return res
-    
-    # def _reward_feet_swing_height(self):
-    #     contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
-    #     pos_error = torch.square(self.feet_pos[:, :, 2] - self.cfg.rewards.feet_swing_height) * ~contact
-    #     return torch.sum(pos_error, dim=(1))
+
+    def _reward_contact_stand_still(self):
+        left_contact = self.contact_forces[:, self.feet_indices[0], 2] > 1
+        right_contact = self.contact_forces[:, self.feet_indices[1], 2] > 1
+        
+        return left_contact * right_contact * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
     
     def _reward_alive(self):
         # Reward for staying alive
@@ -117,7 +119,7 @@ class KBot(LeggedRobot):
         contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
         contact_feet_vel = self.feet_vel * contact.unsqueeze(-1)
         penalize = torch.square(contact_feet_vel[:, :, :3])
-        return torch.sum(penalize, dim=(1,2))
+        return torch.sum(penalize, dim=(1,2)) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
     
     def _reward_feet_contact_forces(self):
         """Calculates the reward for keeping contact forces within a specified range. Penalizes
@@ -130,35 +132,12 @@ class KBot(LeggedRobot):
             dim=1,
         )
 
-    def _reward_flat_feet(self):
-        # 1) quats → euler, keep roll & pitch only
-        right_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,0,:])[:,:2]
-        left_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,1,:])[:,:2]
-
-        tgt = torch.tensor([0.0,0.0]).to(device=self.device)
-        rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
-        return rp_err
-
-    
-
-    def _reward_action_smoothness(self):
-        """Encourages smoothness in the robot's actions by penalizing large differences between consecutive actions.
-        This is important for achieving fluid motion and reducing mechanical stress.
-        """
-        term_1 = torch.sum(torch.square(self.last_actions - self.actions), dim=1)
-        term_2 = torch.sum(
-            torch.square(self.actions + self.last_last_actions - 2 * self.last_actions),
-            dim=1,
-        )
-        term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
-        return term_1 + term_2 + term_3
-
-
     def _reward_feet_height(self):
         # Penalize base height away from target
         feet_height = self.feet_pos[:, :, 2]
         dif = torch.abs(feet_height - self.cfg.rewards.feet_height_target)
         dif = torch.min(dif, dim=1).values # [num_env], # select the foot closer to target 
+        dif *= torch.norm(self.commands[:, :2], dim=1) > 0.1  #no reward for zero command
         return torch.clip(dif - 0.02, min=0.) # target - 0.02 ~ target + 0.02 is acceptable 
 
     def _reward_feet_ori(self):
@@ -169,4 +148,38 @@ class KBot(LeggedRobot):
         return torch.sum(torch.square(left_gravity[:, :2]), dim=1)**0.5 + torch.sum(torch.square(right_gravity[:, :2]), dim=1)**0.5 
 
     def _reward_slippage(self):
-        return torch.sum(torch.norm(self.feet_vel, dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) > 1.), dim=1)
+        res = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+        for i in range(self.feet_num):
+            res += torch.norm(self.feet_vel[:,i,:], dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices[i], :], dim=-1) > 1.) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        return res
+
+
+############################# DEPRECATED REWARD FUNCTIONS ##########################################
+
+    # def _reward_feet_swing_height(self):
+    #     contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
+    #     pos_error = torch.square(self.feet_pos[:, :, 2] - self.cfg.rewards.feet_swing_height) * ~contact
+    #     return torch.sum(pos_error, dim=(1))
+    
+    # def _reward_flat_feet(self):
+    #     # 1) quats → euler, keep roll & pitch only
+    #     right_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,0,:])[:,:2]
+    #     left_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,1,:])[:,:2]
+
+    #     tgt = torch.tensor([0.0,0.0]).to(device=self.device)
+    #     rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
+    #     return rp_err
+
+    
+
+    # def _reward_action_smoothness(self):
+    #     """Encourages smoothness in the robot's actions by penalizing large differences between consecutive actions.
+    #     This is important for achieving fluid motion and reducing mechanical stress.
+    #     """
+    #     term_1 = torch.sum(torch.square(self.last_actions - self.actions), dim=1)
+    #     term_2 = torch.sum(
+    #         torch.square(self.actions + self.last_last_actions - 2 * self.last_actions),
+    #         dim=1,
+    #     )
+    #     term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
+    #     return term_1 + term_2 + term_3
