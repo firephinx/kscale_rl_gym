@@ -155,6 +155,16 @@ class LeggedRobot(BaseTask):
         self._reset_dofs(env_ids)
         self._reset_root_states(env_ids)
 
+        # for env_id in env_ids:
+        #     body_props = self.gym.get_actor_rigid_body_properties(self.envs[env_id], self.actor_handles[env_id])
+        #     body_props = self._process_rigid_body_props(body_props, env_id)
+        #     self.gym.set_actor_rigid_body_properties(self.envs[env_id], self.actor_handles[env_id], body_props, recomputeInertia=True)
+
+        # if self.cfg.domain_rand.randomize_gains:
+        #     for i in range(self.num_dofs):
+        #         self.randomized_p_gains[env_ids,i] = torch_rand_float((1-self.cfg.domain_rand.randomize_gains_fraction) * self.p_gains[i], (1+self.cfg.domain_rand.randomize_gains_fraction) * self.p_gains[i], (len(env_ids),1), device=self.device).squeeze(1)
+        #         self.randomized_d_gains[env_ids,i] = torch_rand_float((1-self.cfg.domain_rand.randomize_gains_fraction) * self.d_gains[i], (1+self.cfg.domain_rand.randomize_gains_fraction) * self.d_gains[i], (len(env_ids),1), device=self.device).squeeze(1)
+
         self._resample_commands(env_ids)
 
         # reset buffers
@@ -185,7 +195,6 @@ class LeggedRobot(BaseTask):
         self.projected_gravity[env_ids] = quat_rotate_inverse(self.base_quat[env_ids], self.gravity_vec[env_ids])
 
         if self.cfg.domain_rand.randomize_ctrl_delay:
-            self.action_queue[env_ids] *= 0.
             self.action_queue[env_ids] = 0.
             self.action_delay[env_ids] = torch.randint(self.cfg.domain_rand.ctrl_delay_step_range[0], 
                                               self.cfg.domain_rand.ctrl_delay_step_range[1]+1, (len(env_ids),), device=self.device, requires_grad=False)
@@ -257,7 +266,7 @@ class LeggedRobot(BaseTask):
             if env_id==0:
                 # prepare friction randomization
                 friction_range = self.cfg.domain_rand.friction_range
-                num_buckets = 64
+                num_buckets = 1000
                 bucket_ids = torch.randint(0, num_buckets, (self.num_envs, 1))
                 friction_buckets = torch_rand_float(friction_range[0], friction_range[1], (num_buckets,1), device='cpu')
                 self.friction_coeffs = friction_buckets[bucket_ids]

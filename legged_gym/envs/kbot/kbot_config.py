@@ -30,7 +30,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
     
     class env(LeggedRobotCfg.env):
         num_observations = 39
-        num_privileged_obs = 44
+        num_privileged_obs = 42
         num_actions = 10
 
     class commands(LeggedRobotCfg.commands):
@@ -115,7 +115,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
-        only_positive_rewards = True
+        only_positive_rewards = False
 
         max_contact_force = 500  # forces above this value are penalized
         feet_height_target = 0.15
@@ -128,10 +128,10 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_pos_limits = -100.0*1.25
 
             slippage = -3.0*1.25
-            feet_ori = -1.0*1.25
+            feet_ori = -1.0
 
             tracking_lin_vel = 5.0
-            tracking_ang_vel = 1.0
+            tracking_ang_vel = 5.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
@@ -140,16 +140,16 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_vel = -1e-3
             action_rate = -0.1
             
-            alive = 1.0
-            feet_height = -20.0 #-0.2
-            stand_still = -100.0
+            alive = 4.2
+            feet_height = -10.0 #-0.2
+            stand_still = -20.0
             #contact = 0.18
             contact_no_vel = -0.2
-            contact_stand_still = 10
+            contact_stand_still = 20.0
 
             hip_deviation = -3.0
             feet_air_time = 10.0
-            feet_contact_forces = -0.10*1.25
+            feet_contact_forces = -0.10
             stumble = -1000.0*1.25
 
             #arm_deviation = -1.0 # -0.1

@@ -72,8 +72,8 @@ class KBot(LeggedRobot):
     def compute_observations(self):
         """ Computes observations
         """
-        sin_phase = torch.sin(2 * np.pi * self.phase ).unsqueeze(1)
-        cos_phase = torch.cos(2 * np.pi * self.phase ).unsqueeze(1)
+        # sin_phase = torch.sin(2 * np.pi * self.phase ).unsqueeze(1)
+        # cos_phase = torch.cos(2 * np.pi * self.phase ).unsqueeze(1)
         self.obs_buf = torch.cat((  self.projected_gravity,
                                     self.base_ang_vel  * self.obs_scales.ang_vel,
                                     self.commands[:, :3] * self.commands_scale,
@@ -87,8 +87,8 @@ class KBot(LeggedRobot):
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
                                     self.actions,
-                                    sin_phase,
-                                    cos_phase
+                                    # sin_phase,
+                                    # cos_phase
                                     ),dim=-1)
 
         # add perceptive inputs if not blind
