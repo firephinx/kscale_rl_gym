@@ -140,7 +140,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_vel = -1e-3
             action_rate = -0.1
             
-            alive = 5.0
+            alive = 1.0
             feet_height = -20.0 #-0.2
             stand_still = -100.0
             #contact = 0.18
