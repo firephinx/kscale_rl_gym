@@ -6,32 +6,32 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 1.1] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-           'dof_left_hip_pitch_04' : math.radians(20.0),
+           'dof_left_hip_pitch_04' : math.radians(10.0),
            'dof_left_hip_roll_03': 0.,
            'dof_left_hip_yaw_03': 0.,
-           'dof_left_knee_04': math.radians(50.0),
-           'dof_left_ankle_02': math.radians(-30.0),   
-        #    'dof_left_shoulder_pitch_03' : 0.,        
-        #    'dof_left_shoulder_roll_03': math.radians(10.0),
-        #    'dof_left_shoulder_yaw_02': 0.,
-        #    'dof_left_elbow_02': math.radians(-90.0),
-        #    'dof_left_wrist_00': 0.,
-           'dof_right_hip_pitch_04' : math.radians(-20.0),
+           'dof_left_knee_04': math.radians(30.0),
+           'dof_left_ankle_02': math.radians(-20.0),   
+           'dof_left_shoulder_pitch_03' : 0.,        
+           'dof_left_shoulder_roll_03': math.radians(10.0),
+           'dof_left_shoulder_yaw_02': 0.,
+           'dof_left_elbow_02': 0.,
+           'dof_left_wrist_00': 0.,
+           'dof_right_hip_pitch_04' : math.radians(-10.0),
            'dof_right_hip_roll_03': 0.,
            'dof_right_hip_yaw_03': 0.,
-           'dof_right_knee_04': math.radians(-50.0),
-           'dof_right_ankle_02': math.radians(30.0),
-        #    'dof_right_shoulder_pitch_03' : 0.,   
-        #    'dof_right_shoulder_roll_03': math.radians(-10.0),
-        #    'dof_right_shoulder_yaw_02': 0.,
-        #    'dof_right_elbow_02': math.radians(90.0),
-        #    'dof_right_wrist_00': 0.,
+           'dof_right_knee_04': math.radians(-30.0),
+           'dof_right_ankle_02': math.radians(20.0),
+           'dof_right_shoulder_pitch_03' : 0.,   
+           'dof_right_shoulder_roll_03': math.radians(-10.0),
+           'dof_right_shoulder_yaw_02': 0.,
+           'dof_right_elbow_02': 0.,
+           'dof_right_wrist_00': 0.,
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 39
-        num_privileged_obs = 42
-        num_actions = 10
+        num_observations = 69
+        num_privileged_obs = 72
+        num_actions = 20
 
     class commands(LeggedRobotCfg.commands):
         curriculum = False
@@ -75,22 +75,22 @@ class KBotRoughCfg( LeggedRobotCfg ):
                      'hip_yaw': 100,
                      'knee': 150,
                      'ankle': 40,
-                    #  'shoulder_pitch': 100,
-                    #  'shoulder_roll': 100,
-                    #  'shoulder_yaw': 40,
-                    #  'elbow': 40,
-                    #  'wrist': 20,
+                     'shoulder_pitch': 100,
+                     'shoulder_roll': 100,
+                     'shoulder_yaw': 40,
+                     'elbow': 40,
+                     'wrist': 20,
                      }  # [N*m/rad]
         damping = {  'hip_pitch': 2,
                      'hip_roll': 26.387,
                      'hip_yaw': 3.419,
                      'knee': 8.654,
                      'ankle': 0.99,
-                    #  'shoulder_pitch': 8.284,
-                    #  'shoulder_roll': 8.257,
-                    #  'shoulder_yaw': 0.945,
-                    #  'elbow':1.266,
-                    #  'wrist': 0.295
+                     'shoulder_pitch': 8.284,
+                     'shoulder_roll': 8.257,
+                     'shoulder_yaw': 0.945,
+                     'elbow':1.266,
+                     'wrist': 0.295
                      }  # [N*m/rad]  # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25
@@ -98,7 +98,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         decimation = 4
 
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/kbot_10dof.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot.urdf'
         name = "kbot"
         foot_name = 'LEG_FOOT'
         knee_name = 'Femur'
@@ -115,7 +115,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
-        only_positive_rewards = False
+        only_positive_rewards = True
 
         max_contact_force = 500  # forces above this value are penalized
         feet_height_target = 0.15
@@ -130,7 +130,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             slippage = -3.0*1.25
             feet_ori = -1.0
 
-            tracking_lin_vel = 5.0
+            tracking_lin_vel = 10.0
             tracking_ang_vel = 5.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
@@ -140,7 +140,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_vel = -1e-3
             action_rate = -0.1
             
-            alive = 4.2
+            alive = 20.0
             feet_height = -10.0 #-0.2
             stand_still = -20.0
             #contact = 0.18

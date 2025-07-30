@@ -226,25 +226,25 @@ joint_names = ['dof_left_hip_pitch_04',
 
 _INIT_JOINT_POS = torch.tensor(
         [
-            math.radians(20.0),  # dof_left_hip_pitch_04
+            math.radians(10.0),  # dof_left_hip_pitch_04
             0.0,  # dof_left_hip_roll_03
             0.0,  # dof_left_hip_yaw_03
-            math.radians(50.0),  # dof_left_knee_04
-            math.radians(-30.0),  # dof_left_ankle_02
-            math.radians(-20.0),  # dof_right_hip_pitch_04
+            math.radians(30.0),  # dof_left_knee_04
+            math.radians(-20.0),  # dof_left_ankle_02
+            math.radians(-10.0),  # dof_right_hip_pitch_04
             0.0,  # dof_right_hip_roll_03
             0.0,  # dof_right_hip_yaw_03
-            math.radians(-50.0),  # dof_right_knee_04
-            math.radians(30.0),  # dof_right_ankle_02
+            math.radians(-30.0),  # dof_right_knee_04
+            math.radians(20.0),  # dof_right_ankle_02
             0.0,  # dof_left_shoulder_pitch_03
             math.radians(10.0),  # dof_left_shoulder_roll_03
             0.0,  # dof_left_shoulder_yaw_02
-            math.radians(-90.0),  # dof_left_elbow_02
+            0.0,  # dof_left_elbow_02
             0.0,  # dof_left_wrist_00
             0.0,  # dof_right_shoulder_pitch_03
             math.radians(-10.0),  # dof_right_shoulder_roll_03
             0.0,  # dof_right_shoulder_yaw_02
-            math.radians(90.0),  # dof_right_elbow_02
+            0.0,  # dof_right_elbow_02
             0.0,  # dof_right_wrist_00
         ]
     )
@@ -255,21 +255,21 @@ _JOINT_LIMITS = torch.tensor(
         [-1.4923,  1.4923],
         [ 0.0676,  2.6376],
         [-1.2195,  0.1898],
+        [-1.2828,  3.0281],
+        [-0.2989,  1.6079],
+        [-1.5752,  1.5752],
+        [-2.4164, -0.0620],
+        [-1.6581,  1.6581],
         [-2.1350,  0.9656],
         [-2.2070,  0.1475],
         [-1.4923,  1.4923],
         [-2.6376, -0.0676],
         [-0.1898,  1.2195],
-        [-1.1694,  2.9147],
-        [-0.2487,  1.5577],
-        [-1.4923,  1.4923],
-        [-2.3544, -0.1239],
-        [-1.5708,  1.5708],
-        [-2.9147,  1.1694],
-        [-1.5577,  0.2487],
-        [-1.4923,  1.4923],
-        [ 0.1239,  2.3544],
-        [-1.5708,  1.5708]]
+        [-3.0281,  1.2828],
+        [-1.6079,  0.2989],
+        [-1.5752,  1.5752],
+        [ 0.0620,  2.4164],
+        [-1.6581,  1.6581]]
     )
 
 NUM_JOINTS = len(joint_names)
@@ -297,6 +297,8 @@ def construct_obs_rnn(
 ) -> torch.Tensor:
     scaled_projected_gravity = projected_gravity / 9.81
     scaled_gyro = gyroscope * ang_vel_scale
+    if command[0] > 0.0 and command < 0.4:
+        command[0] = 0.4
     scaled_command = command * cmd_scale
     offset_joint_angles = (joint_angles - _INIT_JOINT_POS) * dof_pos_scale
     scaled_joint_angular_velocities = joint_angular_velocities * dof_vel_scale
