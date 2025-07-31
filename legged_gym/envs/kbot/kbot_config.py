@@ -103,7 +103,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         foot_name = 'LEG_FOOT'
         knee_name = 'Femur'
         imu_name = "imu"
-        #arm_names = ["shoulder", "elbow", "wrist"]
+        arm_names = ["shoulder", "elbow", "wrist"]
         hip_names = ['hip_roll', 'hip_yaw']
         ankle_names = ['ankle']
         knee_names = ['knee']
@@ -114,45 +114,45 @@ class KBotRoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 1.0
-        only_positive_rewards = True
+        base_height_target = 1.1
+        only_positive_rewards = False
 
         max_contact_force = 500  # forces above this value are penalized
         feet_height_target = 0.15
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -9e-5*1.25
-            torque_limits = -2e-1*1.25
-            dof_acc = -8.4e-6*1.25 #-8.4e-6   -4.2e-7 #-3.5e-8
-            dof_vel = -0.003*1.25 # -0.003
-            dof_pos_limits = -100.0*1.25
+            torques = -1e-5 #-9e-5
+            torque_limits = -2e-1
+            dof_acc = -8.4e-6 #  -4.2e-7 #-3.5e-8
+            dof_vel = -0.001
+            dof_pos_limits = -100.0
 
-            slippage = -3.0*1.25
+            #slippage = -3.0
             feet_ori = -1.0
 
-            tracking_lin_vel = 10.0
-            tracking_ang_vel = 5.0
+            tracking_lin_vel = 20.0
+            tracking_ang_vel = 10.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
             base_height = -10.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
-            action_rate = -0.1
+            action_rate = -0.08
             
-            alive = 20.0
+            alive = 10.0
             feet_height = -10.0 #-0.2
             stand_still = -20.0
-            #contact = 0.18
-            contact_no_vel = -0.2
+            contact = 0.18
+            contact_no_vel = -3.0
             contact_stand_still = 20.0
 
             hip_deviation = -3.0
             feet_air_time = 10.0
-            feet_contact_forces = -0.10
-            stumble = -1000.0*1.25
+            feet_contact_forces = -0.05 #-0.10
+            stumble = -1000.0
 
-            #arm_deviation = -1.0 # -0.1
+            arm_deviation = -0.5 # -0.1
             #ankle_deviation = -0.1
             #ankle_pos_limits = -10.0
             #flat_feet = 0.0 #-0.1 # -2.0

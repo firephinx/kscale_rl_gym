@@ -103,7 +103,8 @@ class TorchPolicyExporter(torch.nn.Module):
     def _forward_ff(self, obs: torch.Tensor, carry: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Feedforward forward pass (stateless for consistency)."""
         obs = self.normalizer(obs)
-        return self.actor(obs), self.actor(obs)
+        actions = self.actor(obs)
+        return actions, actions
 
     def _forward_gru(self, obs: torch.Tensor, carry: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """GRU forward pass with stateless carry management."""
@@ -208,16 +209,16 @@ joint_names = ['dof_left_hip_pitch_04',
                 'dof_left_hip_yaw_03',
                 'dof_left_knee_04',
                 'dof_left_ankle_02',
-                'dof_right_hip_pitch_04',
-                'dof_right_hip_roll_03',
-                'dof_right_hip_yaw_03',
-                'dof_right_knee_04',
-                'dof_right_ankle_02',
                 'dof_left_shoulder_pitch_03',
                 'dof_left_shoulder_roll_03',
                 'dof_left_shoulder_yaw_02',
                 'dof_left_elbow_02',
                 'dof_left_wrist_00',
+                'dof_right_hip_pitch_04',
+                'dof_right_hip_roll_03',
+                'dof_right_hip_yaw_03',
+                'dof_right_knee_04',
+                'dof_right_ankle_02',
                 'dof_right_shoulder_pitch_03',
                 'dof_right_shoulder_roll_03',
                 'dof_right_shoulder_yaw_02',
@@ -231,16 +232,16 @@ _INIT_JOINT_POS = torch.tensor(
             0.0,  # dof_left_hip_yaw_03
             math.radians(30.0),  # dof_left_knee_04
             math.radians(-20.0),  # dof_left_ankle_02
-            math.radians(-10.0),  # dof_right_hip_pitch_04
-            0.0,  # dof_right_hip_roll_03
-            0.0,  # dof_right_hip_yaw_03
-            math.radians(-30.0),  # dof_right_knee_04
-            math.radians(20.0),  # dof_right_ankle_02
             0.0,  # dof_left_shoulder_pitch_03
             math.radians(10.0),  # dof_left_shoulder_roll_03
             0.0,  # dof_left_shoulder_yaw_02
             0.0,  # dof_left_elbow_02
             0.0,  # dof_left_wrist_00
+            math.radians(-10.0),  # dof_right_hip_pitch_04
+            0.0,  # dof_right_hip_roll_03
+            0.0,  # dof_right_hip_yaw_03
+            math.radians(-30.0),  # dof_right_knee_04
+            math.radians(20.0),  # dof_right_ankle_02
             0.0,  # dof_right_shoulder_pitch_03
             math.radians(-10.0),  # dof_right_shoulder_roll_03
             0.0,  # dof_right_shoulder_yaw_02
@@ -274,17 +275,15 @@ _JOINT_LIMITS = torch.tensor(
 
 NUM_JOINTS = len(joint_names)
 NUM_COMMANDS = 3
-NUM_SUB_JOINTS = 10
 
 # Get carry shape from the exporter
-CARRY_SHAPE = exporter.get_carry_shape(NUM_SUB_JOINTS)
+CARRY_SHAPE = exporter.get_carry_shape(NUM_JOINTS)
 
 ACTION_SCALE = 0.25
 
 cmd_scale = torch.tensor([2.0, 2.0, 0.25])
-action_scale = torch.tensor(0.25)
-dof_pos_scale = torch.tensor(1.0)
-dof_vel_scale = torch.tensor(0.05)
+dof_pos_scale = 1.0
+dof_vel_scale = 0.05
 ang_vel_scale = 0.25
 
 def construct_obs_rnn(
@@ -297,8 +296,6 @@ def construct_obs_rnn(
 ) -> torch.Tensor:
     scaled_projected_gravity = projected_gravity / 9.81
     scaled_gyro = gyroscope * ang_vel_scale
-    if command[0] > 0.0 and command < 0.4:
-        command[0] = 0.4
     scaled_command = command * cmd_scale
     offset_joint_angles = (joint_angles - _INIT_JOINT_POS) * dof_pos_scale
     scaled_joint_angular_velocities = joint_angular_velocities * dof_vel_scale
@@ -307,8 +304,8 @@ def construct_obs_rnn(
             scaled_projected_gravity,
             scaled_gyro,
             scaled_command,
-            offset_joint_angles[:10],
-            scaled_joint_angular_velocities[:10],
+            offset_joint_angles,
+            scaled_joint_angular_velocities,
             carry
         ),
         dim=-1,
@@ -346,16 +343,15 @@ def _step_fn(
     obs = construct_obs(projected_gravity, joint_angles, joint_angular_velocities, command, gyroscope, carry)
 
     actions, new_carry = ts_policy(obs, carry)
-    new_actions = torch.cat((actions, torch.zeros(10)))
     
-    clamped_actions = (new_actions * ACTION_SCALE) + _INIT_JOINT_POS
+    clamped_actions = (actions * ACTION_SCALE) + _INIT_JOINT_POS
     for i in range(NUM_JOINTS):
         clamped_actions[i] = torch.clamp(clamped_actions[i], _JOINT_LIMITS[i, 0], _JOINT_LIMITS[i, 1])
 
     return clamped_actions, new_carry
   
 def _init_fn() -> torch.Tensor:
-    return exporter.get_initial_carry(NUM_SUB_JOINTS)
+    return exporter.get_initial_carry(NUM_JOINTS)
 
 step_args = (
     torch.zeros(3), # projected_gravity
@@ -366,7 +362,7 @@ step_args = (
     torch.zeros(*CARRY_SHAPE),
 )
 
-step_fn = torch.jit.trace(_step_fn, step_args, check_trace=False)
+step_fn = torch.jit.trace(_step_fn, step_args)#, check_trace=False)
 init_fn = torch.jit.trace(_init_fn, ())
 
 # ----------------------------------------------------------------------------
