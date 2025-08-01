@@ -850,6 +850,14 @@ class LeggedRobot(BaseTask):
         elif self.cfg.rewards.arm_deviation_loss == 'l2':
             return torch.sum(torch.square(self.dof_pos[:,self.arm_indices] - self.default_dof_pos[:,self.arm_indices]), dim=1)
 
+    def _reward_arm_vel(self):
+        # Penalize dof velocities
+        return torch.sum(torch.square(self.dof_vel[:,self.arm_indices]), dim=1)
+    
+    def _reward_arm_acc(self):
+        # Penalize dof accelerations
+        return torch.sum(torch.square((self.last_dof_vel[:,self.arm_indices] - self.dof_vel[:,self.arm_indices]) / self.dt), dim=1)
+
     def _reward_hip_deviation(self):
         if self.cfg.rewards.hip_deviation_loss == 'l1':
             return torch.sum(torch.abs(self.dof_pos[:,self.hip_indices] - self.default_dof_pos[:,self.hip_indices]), dim=1)

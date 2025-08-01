@@ -6,25 +6,25 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 1.1] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-           'dof_left_hip_pitch_04' : math.radians(10.0),
+           'dof_left_hip_pitch_04' : math.radians(20.0),
            'dof_left_hip_roll_03': 0.,
            'dof_left_hip_yaw_03': 0.,
-           'dof_left_knee_04': math.radians(30.0),
-           'dof_left_ankle_02': math.radians(-20.0),   
+           'dof_left_knee_04': math.radians(50.0),
+           'dof_left_ankle_02': math.radians(-30.0),   
            'dof_left_shoulder_pitch_03' : 0.,        
            'dof_left_shoulder_roll_03': math.radians(10.0),
            'dof_left_shoulder_yaw_02': 0.,
-           'dof_left_elbow_02': 0.,
+           'dof_left_elbow_02': math.radians(-90.0),
            'dof_left_wrist_00': 0.,
-           'dof_right_hip_pitch_04' : math.radians(-10.0),
+           'dof_right_hip_pitch_04' : math.radians(-20.0),
            'dof_right_hip_roll_03': 0.,
            'dof_right_hip_yaw_03': 0.,
-           'dof_right_knee_04': math.radians(-30.0),
-           'dof_right_ankle_02': math.radians(20.0),
+           'dof_right_knee_04': math.radians(-50.0),
+           'dof_right_ankle_02': math.radians(30.0),
            'dof_right_shoulder_pitch_03' : 0.,   
            'dof_right_shoulder_roll_03': math.radians(-10.0),
            'dof_right_shoulder_yaw_02': 0.,
-           'dof_right_elbow_02': 0.,
+           'dof_right_elbow_02': math.radians(90.0),
            'dof_right_wrist_00': 0.,
         }
     
@@ -121,30 +121,30 @@ class KBotRoughCfg( LeggedRobotCfg ):
         feet_height_target = 0.15
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -1e-5 #-9e-5
+            torques = -9e-5 #-9e-5
             torque_limits = -2e-1
-            dof_acc = -8.4e-6 #  -4.2e-7 #-3.5e-8
-            dof_vel = -0.001
+            #dof_acc = -8.4e-6 #  -4.2e-7 #-3.5e-8
+            #dof_vel = -0.0005
             dof_pos_limits = -100.0
 
             #slippage = -3.0
             feet_ori = -1.0
 
             tracking_lin_vel = 20.0
-            tracking_ang_vel = 10.0
+            tracking_ang_vel = 20.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
             base_height = -10.0
-            dof_acc = -2.5e-7
-            dof_vel = -1e-3
-            action_rate = -0.08
+            dof_acc = -1e-7
+            dof_vel = -1e-4
+            action_rate = -0.1
             
             alive = 10.0
             feet_height = -10.0 #-0.2
-            stand_still = -20.0
+            stand_still = -15.0
             contact = 0.18
-            contact_no_vel = -3.0
+            contact_no_vel = -1.0
             contact_stand_still = 20.0
 
             hip_deviation = -3.0
@@ -152,7 +152,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
             feet_contact_forces = -0.05 #-0.10
             stumble = -1000.0
 
-            arm_deviation = -0.5 # -0.1
+            arm_deviation = -1.0 # -0.1
+            arm_acc = -1e-7
+            arm_vel = -5e-4
             #ankle_deviation = -0.1
             #ankle_pos_limits = -10.0
             #flat_feet = 0.0 #-0.1 # -2.0
@@ -163,8 +165,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
         init_noise_std = 0.8
-        actor_hidden_dims = [256, 128]
-        critic_hidden_dims = [256, 128]
+        actor_hidden_dims = [128, 256, 128]
+        critic_hidden_dims = [128, 256, 128]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         # only for 'ActorCriticRecurrent':
         # rnn_type = 'lstm'
@@ -175,7 +177,7 @@ class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
         entropy_coef = 0.01
     class runner( LeggedRobotCfgPPO.runner ):
         policy_class_name = "ActorCritic"
-        max_iterations = 10000
+        max_iterations = 20000
         run_name = ''
         experiment_name = 'kbot'
         log_dir = 'logs/kbot/'
