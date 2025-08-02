@@ -29,9 +29,10 @@ class KBotRoughCfg( LeggedRobotCfg ):
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 69
-        num_privileged_obs = 72
-        num_actions = 20
+        num_observations = 59
+        num_privileged_obs = 62
+        num_actions = 10
+        num_joints = 20
 
     class commands(LeggedRobotCfg.commands):
         curriculum = False
@@ -45,9 +46,6 @@ class KBotRoughCfg( LeggedRobotCfg ):
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
             ang_vel_yaw = [-1,1]    # min max [rad/s]
-            # lin_vel_x = [0.0, 0.0] # min max [m/s]
-            # lin_vel_y = [0.0, 0.0]   # min max [m/s]
-            # ang_vel_yaw = [0, 0]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -114,7 +112,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 1.1
+        base_height_target = 1.0
         only_positive_rewards = False
 
         max_contact_force = 500  # forces above this value are penalized
@@ -128,19 +126,19 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_pos_limits = -100.0
 
             #slippage = -3.0
-            feet_ori = -1.0
+            feet_ori = -0.5 #-1.0
 
-            tracking_lin_vel = 20.0
-            tracking_ang_vel = 20.0
+            tracking_lin_vel = 10.0
+            tracking_ang_vel = 10.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
             base_height = -10.0
-            dof_acc = -1e-7
+            dof_acc = -1e-6
             dof_vel = -1e-4
             action_rate = -0.1
             
-            alive = 10.0
+            alive = 5.0
             feet_height = -10.0 #-0.2
             stand_still = -15.0
             contact = 0.18
@@ -152,9 +150,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
             feet_contact_forces = -0.05 #-0.10
             stumble = -1000.0
 
-            arm_deviation = -1.0 # -0.1
-            arm_acc = -1e-7
-            arm_vel = -5e-4
+            #arm_deviation = -1.0 # -0.1
+            #arm_acc = -1e-7
+            #arm_vel = -5e-4
             #ankle_deviation = -0.1
             #ankle_pos_limits = -10.0
             #flat_feet = 0.0 #-0.1 # -2.0

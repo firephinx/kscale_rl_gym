@@ -275,9 +275,10 @@ _JOINT_LIMITS = torch.tensor(
 
 NUM_JOINTS = len(joint_names)
 NUM_COMMANDS = 3
+NUM_ACTIONS = 10
 
 # Get carry shape from the exporter
-CARRY_SHAPE = exporter.get_carry_shape(NUM_JOINTS)
+CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS)
 
 ACTION_SCALE = 0.25
 
@@ -344,14 +345,22 @@ def _step_fn(
 
     actions, new_carry = ts_policy(obs, carry)
     
-    clamped_actions = (actions * ACTION_SCALE) + _INIT_JOINT_POS
+    clamped_actions = torch.cat(
+        (
+            (actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
+            _INIT_JOINT_POS[5:10],
+            (actions[5:] * ACTION_SCALE) + _INIT_JOINT_POS[10:15],
+            _INIT_JOINT_POS[15:],
+        ),
+        dim=-1,
+    )
     for i in range(NUM_JOINTS):
         clamped_actions[i] = torch.clamp(clamped_actions[i], _JOINT_LIMITS[i, 0], _JOINT_LIMITS[i, 1])
 
     return clamped_actions, new_carry
   
 def _init_fn() -> torch.Tensor:
-    return exporter.get_initial_carry(NUM_JOINTS)
+    return exporter.get_initial_carry(*CARRY_SHAPE)
 
 step_args = (
     torch.zeros(3), # projected_gravity

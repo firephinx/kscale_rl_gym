@@ -26,8 +26,8 @@ class KBot(LeggedRobot):
         noise_vec[:3] = noise_scales.gravity * noise_level
         noise_vec[3:6] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[6:9] = 0. # commands
-        noise_vec[9:9+self.num_actions] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[9+self.num_actions:9+2*self.num_actions] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[9:9+self.num_dof] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+        noise_vec[9+self.num_dof:9+2*self.num_dof] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
         noise_vec[9+2*self.num_actions:9+3*self.num_actions] = 0. # previous actions
         
         return noise_vec
@@ -153,34 +153,3 @@ class KBot(LeggedRobot):
         for i in range(self.feet_num):
             res += torch.norm(self.feet_vel[:,i,:], dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices[i], :], dim=-1) > 1.) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
         return res
-
-
-############################# DEPRECATED REWARD FUNCTIONS ##########################################
-
-    # def _reward_feet_swing_height(self):
-    #     contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
-    #     pos_error = torch.square(self.feet_pos[:, :, 2] - self.cfg.rewards.feet_swing_height) * ~contact
-    #     return torch.sum(pos_error, dim=(1))
-    
-    # def _reward_flat_feet(self):
-    #     # 1) quats → euler, keep roll & pitch only
-    #     right_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,0,:])[:,:2]
-    #     left_foot_rp = get_euler_xyz_in_tensor(self.feet_quat[:,1,:])[:,:2]
-
-    #     tgt = torch.tensor([0.0,0.0]).to(device=self.device)
-    #     rp_err = torch.abs(left_foot_rp - tgt).sum(axis=-1) + torch.abs(right_foot_rp - tgt).sum(axis=-1)
-    #     return rp_err
-
-    
-
-    # def _reward_action_smoothness(self):
-    #     """Encourages smoothness in the robot's actions by penalizing large differences between consecutive actions.
-    #     This is important for achieving fluid motion and reducing mechanical stress.
-    #     """
-    #     term_1 = torch.sum(torch.square(self.last_actions - self.actions), dim=1)
-    #     term_2 = torch.sum(
-    #         torch.square(self.actions + self.last_last_actions - 2 * self.last_actions),
-    #         dim=1,
-    #     )
-    #     term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
-    #     return term_1 + term_2 + term_3
