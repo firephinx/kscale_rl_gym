@@ -43,23 +43,22 @@ class KBotRoughCfg( LeggedRobotCfg ):
         heading_command = False # if true: compute ang vel command from heading error
         bias_percentage_stand_still = 0.3
         class ranges:
-            lin_vel_x = [-1.0, 1.0] # min max [m/s]
-            lin_vel_y = [-1.0, 1.0]   # min max [m/s]
+            lin_vel_x = [-1.5, 1.5] # min max [m/s]
+            lin_vel_y = [-0.5, 0.5]   # min max [m/s]
             ang_vel_yaw = [-1,1]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
         curriculum = False
-        #num_curriculum_levels = 10
         randomize_friction = True
         friction_range = [0.1, 1.5]
         randomize_link_masses = True
-        randomize_link_masses_fraction = 0.3
+        randomize_link_masses_fraction = 0.2
         randomize_gains = True
         randomize_gains_fraction = 0.25
         push_robots = True
         push_interval_s = 5
-        max_push_vel_xy = 1
+        max_push_vel_xy = 1.0
         randomize_ctrl_delay = True
         ctrl_delay_step_range = [1, 3]
       
@@ -121,12 +120,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
         class scales( LeggedRobotCfg.rewards.scales ):
             torques = -9e-5 #-9e-5
             torque_limits = -2e-1
-            #dof_acc = -8.4e-6 #  -4.2e-7 #-3.5e-8
-            #dof_vel = -0.0005
             dof_pos_limits = -100.0
 
-            #slippage = -3.0
-            feet_ori = -0.5 #-1.0
+            slippage = -3.0
+            feet_ori = -1.0
+
+            base_lin_acc = -0.00001
+            base_ang_acc = -0.00001
 
             tracking_lin_vel = 10.0
             tracking_ang_vel = 10.0
@@ -134,21 +134,22 @@ class KBotRoughCfg( LeggedRobotCfg ):
             ang_vel_xy = -0.05
             orientation = -1.0
             base_height = -10.0
-            dof_acc = -1e-6
-            dof_vel = -1e-4
+            dof_acc = -2.5e-7
+            dof_vel = -1e-3
             action_rate = -0.1
             
-            alive = 5.0
+            alive = 10.0
             feet_height = -10.0 #-0.2
-            stand_still = -15.0
-            contact = 0.18
-            contact_no_vel = -1.0
+            stand_still = -10.0
+            contact = 1.0
+            contact_no_vel = -0.2
             contact_stand_still = 20.0
 
             hip_deviation = -3.0
             feet_air_time = 10.0
-            feet_contact_forces = -0.05 #-0.10
+            feet_contact_forces = -0.10
             stumble = -1000.0
+            single_foot = 3.0
 
             #arm_deviation = -1.0 # -0.1
             #arm_acc = -1e-7
@@ -156,7 +157,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             #ankle_deviation = -0.1
             #ankle_pos_limits = -10.0
             #flat_feet = 0.0 #-0.1 # -2.0
-            #collision = 0.0
+            collision = 0.0
             #foot_slip = -0.1
             #action_smoothness = 0.0
 
