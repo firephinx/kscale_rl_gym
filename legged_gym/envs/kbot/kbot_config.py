@@ -43,7 +43,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         heading_command = False # if true: compute ang vel command from heading error
         bias_percentage_stand_still = 0.3
         class ranges:
-            lin_vel_x = [-0.5, 0.5] # min max [m/s]
+            lin_vel_x = [-1, 1] # min max [m/s]
             lin_vel_y = [-0.5, 0.5]   # min max [m/s]
             ang_vel_yaw = [-0.5,0.5]    # min max [rad/s]
 
@@ -119,14 +119,14 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
-        only_positive_rewards = True
+        only_positive_rewards = False
 
         max_contact_force = 500  # forces above this value are penalized
         feet_height_target = 0.15
         close_to_home_threshold = 0.15
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -9e-5 #-9e-5
+            torques = -9e-5
             torque_limits = -2e-1
             dof_pos_limits = -100.0
 
@@ -149,23 +149,23 @@ class KBotRoughCfg( LeggedRobotCfg ):
             action_rate = -0.1
             smoothness = -0.05
             
-            alive = 10.0
+            alive = 1.0
             feet_height = -20.0 #-0.2
             stand_still = -10.0
-            contact = 1.0
+            #contact = 1.0
             #contact_no_vel = -0.2
             contact_stand_still = 20.0
 
             hip_deviation = -3.0
-            feet_air_time = 10.0
+            feet_air_time = 15.0
             feet_contact_forces = -0.1
             stumble = -1000.0
             single_foot = 1.0
-            close_to_home = 100.0
+            #close_to_home = 50.0
 
             #ankle_deviation = -0.1
             ankle_pos_limits = -10.0
-            ankle_acc = -0.0000005
+            ankle_acc = -1e-7
             collision = 0.0
             joint_power = -2e-5
 
