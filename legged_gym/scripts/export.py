@@ -227,25 +227,45 @@ joint_names = ['dof_left_hip_pitch_04',
 
 _INIT_JOINT_POS = torch.tensor(
         [
-            math.radians(20.0),  # dof_left_hip_pitch_04
+            # math.radians(20.0),  # dof_left_hip_pitch_04
+            # 0.0,  # dof_left_hip_roll_03
+            # 0.0,  # dof_left_hip_yaw_03
+            # math.radians(50.0),  # dof_left_knee_04
+            # math.radians(-30.0),  # dof_left_ankle_02
+            # 0.0,  # dof_left_shoulder_pitch_03
+            # math.radians(10.0),  # dof_left_shoulder_roll_03
+            # 0.0,  # dof_left_shoulder_yaw_02
+            # math.radians(-90.0),  # dof_left_elbow_02
+            # 0.0,  # dof_left_wrist_00
+            # math.radians(-20.0),  # dof_right_hip_pitch_04
+            # 0.0,  # dof_right_hip_roll_03
+            # 0.0,  # dof_right_hip_yaw_03
+            # math.radians(-50.0),  # dof_right_knee_04
+            # math.radians(30.0),  # dof_right_ankle_02
+            # 0.0,  # dof_right_shoulder_pitch_03
+            # math.radians(-10.0),  # dof_right_shoulder_roll_03
+            # 0.0,  # dof_right_shoulder_yaw_02
+            # math.radians(90.0),  # dof_right_elbow_02
+            # 0.0,  # dof_right_wrist_00
+            0.0,  # dof_left_hip_pitch_04
             0.0,  # dof_left_hip_roll_03
             0.0,  # dof_left_hip_yaw_03
-            math.radians(50.0),  # dof_left_knee_04
-            math.radians(-30.0),  # dof_left_ankle_02
+            0.0,  # dof_left_knee_04
+            math.radians(-5.0),  # dof_left_ankle_02
             0.0,  # dof_left_shoulder_pitch_03
             math.radians(10.0),  # dof_left_shoulder_roll_03
             0.0,  # dof_left_shoulder_yaw_02
-            math.radians(-90.0),  # dof_left_elbow_02
+            0.0,  # dof_left_elbow_02
             0.0,  # dof_left_wrist_00
-            math.radians(-20.0),  # dof_right_hip_pitch_04
+            0.0,  # dof_right_hip_pitch_04
             0.0,  # dof_right_hip_roll_03
             0.0,  # dof_right_hip_yaw_03
-            math.radians(-50.0),  # dof_right_knee_04
-            math.radians(30.0),  # dof_right_ankle_02
+            0.0,  # dof_right_knee_04
+            math.radians(5.0),  # dof_right_ankle_02
             0.0,  # dof_right_shoulder_pitch_03
             math.radians(-10.0),  # dof_right_shoulder_roll_03
             0.0,  # dof_right_shoulder_yaw_02
-            math.radians(90.0),  # dof_right_elbow_02
+            0.0,  # dof_right_elbow_02
             0.0,  # dof_right_wrist_00
         ]
     )

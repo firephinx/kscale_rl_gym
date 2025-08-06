@@ -43,9 +43,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
         heading_command = False # if true: compute ang vel command from heading error
         bias_percentage_stand_still = 0.3
         class ranges:
-            lin_vel_x = [-1.5, 1.5] # min max [m/s]
+            lin_vel_x = [-0.5, 0.5] # min max [m/s]
             lin_vel_y = [-0.5, 0.5]   # min max [m/s]
-            ang_vel_yaw = [-1,1]    # min max [rad/s]
+            ang_vel_yaw = [-0.5,0.5]    # min max [rad/s]
+
+            # lin_vel_x = [0.0, 0.0] # min max [m/s]
+            # lin_vel_y = [0.0, 0.0]   # min max [m/s]
+            # ang_vel_yaw = [0,0]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -53,14 +57,15 @@ class KBotRoughCfg( LeggedRobotCfg ):
         randomize_friction = True
         friction_range = [0.1, 1.5]
         randomize_link_masses = True
-        randomize_link_masses_fraction = 0.2
+        randomize_link_masses_fraction = 0.1
         randomize_gains = True
-        randomize_gains_fraction = 0.25
+        randomize_gains_fraction = 0.1
         push_robots = True
         push_interval_s = 5
-        max_push_vel_xy = 1.0
+        max_push_vel_xy = 0.5
         randomize_ctrl_delay = True
         ctrl_delay_step_range = [1, 3]
+        inital_joint_perturbation = 0.01
       
 
     class control( LeggedRobotCfg.control ):
@@ -71,7 +76,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
                      'hip_roll': 200,
                      'hip_yaw': 100,
                      'knee': 150,
-                     'ankle': 40,
+                     #'ankle': 100, # stronger ankle
+                     'ankle': 40, # original ankle
                      'shoulder_pitch': 100,
                      'shoulder_roll': 100,
                      'shoulder_yaw': 40,
@@ -82,7 +88,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
                      'hip_roll': 26.387,
                      'hip_yaw': 3.419,
                      'knee': 8.654,
-                     'ankle': 0.99,
+                     #'ankle': 2, # stronger ankle
+                     'ankle': 0.99, # original ankle
                      'shoulder_pitch': 8.284,
                      'shoulder_roll': 8.257,
                      'shoulder_yaw': 0.945,
@@ -112,24 +119,27 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
         base_height_target = 1.0
-        only_positive_rewards = False
+        only_positive_rewards = True
 
         max_contact_force = 500  # forces above this value are penalized
         feet_height_target = 0.15
+        close_to_home_threshold = 0.15
 
         class scales( LeggedRobotCfg.rewards.scales ):
             torques = -9e-5 #-9e-5
             torque_limits = -2e-1
             dof_pos_limits = -100.0
 
-            slippage = -3.0
+            #slippage = -3.0
+            feet_slip = -3.0
             feet_ori = -1.0
 
             base_lin_acc = -0.00001
             base_ang_acc = -0.00001
 
-            tracking_lin_vel = 10.0
-            tracking_ang_vel = 10.0
+            tracking_x_vel = 5.0
+            tracking_y_vel = 5.0
+            tracking_ang_vel = 5.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
@@ -137,29 +147,27 @@ class KBotRoughCfg( LeggedRobotCfg ):
             dof_acc = -2.5e-7
             dof_vel = -1e-3
             action_rate = -0.1
+            smoothness = -0.05
             
             alive = 10.0
-            feet_height = -10.0 #-0.2
+            feet_height = -20.0 #-0.2
             stand_still = -10.0
             contact = 1.0
-            contact_no_vel = -0.2
+            #contact_no_vel = -0.2
             contact_stand_still = 20.0
 
             hip_deviation = -3.0
             feet_air_time = 10.0
-            feet_contact_forces = -0.10
+            feet_contact_forces = -0.1
             stumble = -1000.0
-            single_foot = 3.0
+            single_foot = 1.0
+            close_to_home = 100.0
 
-            #arm_deviation = -1.0 # -0.1
-            #arm_acc = -1e-7
-            #arm_vel = -5e-4
             #ankle_deviation = -0.1
-            #ankle_pos_limits = -10.0
-            #flat_feet = 0.0 #-0.1 # -2.0
+            ankle_pos_limits = -10.0
+            ankle_acc = -0.0000005
             collision = 0.0
-            #foot_slip = -0.1
-            #action_smoothness = 0.0
+            joint_power = -2e-5
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
@@ -180,5 +188,6 @@ class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
         run_name = ''
         experiment_name = 'kbot'
         log_dir = 'logs/kbot/'
+        save_interval = 50
 
   

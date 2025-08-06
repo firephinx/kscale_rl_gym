@@ -398,7 +398,7 @@ class LeggedRobot(BaseTask):
             env_ids (List[int]): Environemnt ids
         """
         #randomized_dof_pos = torch.zeros(len(env_ids), self.num_dof, dtype=torch.float, device=self.device)
-        randomized_dof_pos = self.default_dof_pos + torch_rand_float(-0.1, 0.1, (len(env_ids), self.num_dof), device=self.device)
+        randomized_dof_pos = self.default_dof_pos + torch_rand_float(-self.cfg.domain_rand.inital_joint_perturbation, self.cfg.domain_rand.inital_joint_perturbation, (len(env_ids), self.num_dof), device=self.device)
         #new_arm_pos = torch.zeros(len(env_ids), self.num_arm_joints, dtype=torch.float, device=self.device)
         #arm_i = 0
         # for i in range(self.num_dof):
@@ -798,19 +798,19 @@ class LeggedRobot(BaseTask):
     
     def _reward_torques(self):
         # Penalize torques
-        return torch.sum(torch.square(self.torques), dim=1)
+        return torch.sum(torch.square(self.torques[:,self.non_arm_indices]), dim=1)
 
     def _reward_torque_limits(self):
         # penalize torques too close to the limit
-        return torch.sum((torch.abs(self.torques) - self.torque_limits*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
+        return torch.sum((torch.abs(self.torques[:,self.non_arm_indices]) - self.torque_limits[self.non_arm_indices].unsqueeze(0)*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
 
     def _reward_dof_vel(self):
         # Penalize dof velocities
-        return torch.sum(torch.square(self.dof_vel), dim=1)
+        return torch.sum(torch.square(self.dof_vel[:,self.non_arm_indices]), dim=1)
     
     def _reward_dof_acc(self):
         # Penalize dof accelerations
-        return torch.sum(torch.square((self.last_dof_vel - self.dof_vel) / self.dt), dim=1)
+        return torch.sum(torch.square((self.last_dof_vel[:,self.non_arm_indices] - self.dof_vel[:,self.non_arm_indices]) / self.dt), dim=1)
 
     def _reward_base_lin_acc(self):
         # Penalize base accelerations
@@ -823,7 +823,11 @@ class LeggedRobot(BaseTask):
     def _reward_action_rate(self):
         # Penalize changes in actions
         return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
-    
+        
+    def _reward_smoothness(self):
+        # second order smoothness
+        return torch.sum(torch.square(self.actions - self.last_actions - self.last_actions + self.last_last_actions), dim=1)
+
     def _reward_collision(self):
         # Penalize collisions on selected bodies
         return torch.sum(1.*(torch.norm(self.contact_forces[:, self.penalised_contact_indices, :], dim=-1) > 0.1), dim=1)
@@ -841,11 +845,16 @@ class LeggedRobot(BaseTask):
     def _reward_dof_vel_limits(self):
         # Penalize dof velocities too close to the limit
         # clip to max error = 1 rad/s per joint to avoid huge penalties
-        return torch.sum((torch.abs(self.dof_vel) - self.dof_vel_limits*self.cfg.rewards.soft_dof_vel_limit).clip(min=0., max=1.), dim=1)
+        return torch.sum((torch.abs(self.dof_vel[:,self.non_arm_indices]) - self.dof_vel_limits[:,self.non_arm_indices]*self.cfg.rewards.soft_dof_vel_limit).clip(min=0., max=1.), dim=1)
 
-    def _reward_tracking_lin_vel(self):
+    def _reward_tracking_x_vel(self):
         # Tracking of linear velocity commands (xy axes)
-        lin_vel_error = torch.sum(torch.square(self.commands[:, :2] - self.base_lin_vel[:, :2]), dim=1) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        lin_vel_error = torch.sum(torch.square(self.commands[:, :1] - self.base_lin_vel[:, :1]), dim=1)
+        return torch.exp(-lin_vel_error/self.cfg.rewards.tracking_sigma)
+    
+    def _reward_tracking_y_vel(self):
+        # Tracking of linear velocity commands (xy axes)
+        lin_vel_error = torch.sum(torch.square(self.commands[:, 1:2] - self.base_lin_vel[:, 1:2]), dim=1)
         return torch.exp(-lin_vel_error/self.cfg.rewards.tracking_sigma)
     
     def _reward_tracking_ang_vel(self):
@@ -881,25 +890,15 @@ class LeggedRobot(BaseTask):
         
     def _reward_stand_still(self):
         # Penalize motion at zero commands
-        return torch.sum(torch.abs(self.dof_pos - self.default_dof_pos), dim=1) * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
+        return torch.sum(torch.abs(self.dof_pos[:,self.non_arm_indices] - self.default_dof_pos[:,self.non_arm_indices]), dim=1) * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
+
+    def _reward_close_to_home(self):
+        # Reward leg dof positions close to default dof pos at zero commands
+        return (torch.norm(self.dof_pos[:,self.non_arm_indices] - self.default_dof_pos[:,self.non_arm_indices], dim=1) < self.cfg.rewards.close_to_home_threshold) * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
 
     def _reward_feet_contact_forces(self):
         # penalize high contact forces
         return torch.sum((torch.norm(self.contact_forces[:, self.feet_indices, :], dim=-1) -  self.cfg.rewards.max_contact_force).clip(min=0.), dim=1)
-
-    def _reward_arm_deviation(self):
-        if self.cfg.rewards.arm_deviation_loss == 'l1':
-            return torch.sum(torch.abs(self.dof_pos[:,self.arm_indices] - self.default_dof_pos[:,self.arm_indices]), dim=1)
-        elif self.cfg.rewards.arm_deviation_loss == 'l2':
-            return torch.sum(torch.square(self.dof_pos[:,self.arm_indices] - self.default_dof_pos[:,self.arm_indices]), dim=1)
-
-    def _reward_arm_vel(self):
-        # Penalize dof velocities
-        return torch.sum(torch.square(self.dof_vel[:,self.arm_indices]), dim=1)
-    
-    def _reward_arm_acc(self):
-        # Penalize dof accelerations
-        return torch.sum(torch.square((self.last_dof_vel[:,self.arm_indices] - self.dof_vel[:,self.arm_indices]) / self.dt), dim=1)
 
     def _reward_hip_deviation(self):
         if self.cfg.rewards.hip_deviation_loss == 'l1':
@@ -913,8 +912,16 @@ class LeggedRobot(BaseTask):
         elif self.cfg.rewards.ankle_deviation_loss == 'l2':
             return torch.sum(torch.square(self.dof_pos[:,self.ankle_indices] - self.default_dof_pos[:,self.ankle_indices]), dim=1)
 
+    def _reward_ankle_acc(self):
+        # Penalize dof accelerations
+        return torch.sum(torch.square((self.last_dof_vel[:,self.ankle_indices] - self.dof_vel[:,self.ankle_indices]) / self.dt), dim=1)
+
     def _reward_ankle_pos_limits(self):
         # Penalize dof positions too close to the limit
         out_of_limits = -(self.dof_pos[:,self.ankle_indices] - self.soft_dof_pos_limits[self.ankle_indices, 0]).clip(max=0.) # lower limit
         out_of_limits += (self.dof_pos[:,self.ankle_indices] - self.soft_dof_pos_limits[self.ankle_indices, 1]).clip(min=0.)
         return torch.sum(out_of_limits, dim=1)
+
+    def _reward_joint_power(self):
+        #Penalize high power
+        return torch.sum(torch.abs(self.dof_vel[:,self.non_arm_indices]) * torch.abs(self.torques[:,self.non_arm_indices]), dim=1) / torch.clip(torch.sum(torch.square(self.commands[:, 0:2]), dim=-1) + 0.2 * torch.square(self.commands[:, 2]), min=0.1)

@@ -58,7 +58,7 @@ class KBot(LeggedRobot):
     def _post_physics_step_callback(self):
         self.update_feet_state()
 
-        period = 0.8
+        period = 1.2
         offset = 0.5
         self.phase = (self.episode_length_buf * self.dt) % period / period
         self.phase_left = self.phase
@@ -153,3 +153,8 @@ class KBot(LeggedRobot):
         for i in range(self.feet_num):
             res += torch.norm(self.feet_vel[:,i,:], dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices[i], :], dim=-1) > 1.) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
         return res
+
+    def _reward_feet_slip(self): 
+        # Penalize feet slipping
+        contact = self.contact_forces[:, self.feet_indices, 2] > 1.
+        return torch.sum(torch.norm(self.feet_vel[:,:,:2], dim=2) * contact, dim=1)
