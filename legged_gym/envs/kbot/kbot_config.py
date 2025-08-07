@@ -6,21 +6,21 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 1.1] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-           'dof_left_hip_pitch_04' : math.radians(20.0),
+           'dof_left_hip_pitch_04' : 0.0, # math.radians(20.0),
            'dof_left_hip_roll_03': 0.,
            'dof_left_hip_yaw_03': 0.,
-           'dof_left_knee_04': math.radians(50.0),
-           'dof_left_ankle_02': math.radians(-30.0),   
+           'dof_left_knee_04': 0.0, #math.radians(50.0),
+           'dof_left_ankle_02':  math.radians(-5.0),   # math.radians(-30.0),   
            'dof_left_shoulder_pitch_03' : 0.,        
            'dof_left_shoulder_roll_03': math.radians(10.0),
            'dof_left_shoulder_yaw_02': 0.,
            'dof_left_elbow_02': math.radians(-90.0),
            'dof_left_wrist_00': 0.,
-           'dof_right_hip_pitch_04' : math.radians(-20.0),
+           'dof_right_hip_pitch_04' : 0., #math.radians(-20.0),
            'dof_right_hip_roll_03': 0.,
            'dof_right_hip_yaw_03': 0.,
-           'dof_right_knee_04': math.radians(-50.0),
-           'dof_right_ankle_02': math.radians(30.0),
+           'dof_right_knee_04': 0., #math.radians(-50.0),
+           'dof_right_ankle_02': math.radians(5.0), #math.radians(30.0),
            'dof_right_shoulder_pitch_03' : 0.,   
            'dof_right_shoulder_roll_03': math.radians(-10.0),
            'dof_right_shoulder_yaw_02': 0.,
@@ -43,9 +43,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
         heading_command = False # if true: compute ang vel command from heading error
         bias_percentage_stand_still = 0.3
         class ranges:
-            lin_vel_x = [-1, 1] # min max [m/s]
-            lin_vel_y = [-0.5, 0.5]   # min max [m/s]
-            ang_vel_yaw = [-0.5,0.5]    # min max [rad/s]
+            lin_vel_x = [-1.5, 1.5] # min max [m/s]
+            lin_vel_y = [-1, 1]   # min max [m/s]
+            ang_vel_yaw = [-1,1]    # min max [rad/s]
 
             # lin_vel_x = [0.0, 0.0] # min max [m/s]
             # lin_vel_y = [0.0, 0.0]   # min max [m/s]
@@ -103,6 +103,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
 
     class asset( LeggedRobotCfg.asset ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot.urdf'
+        #file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot_stronger_ankle.urdf'
         name = "kbot"
         foot_name = 'LEG_FOOT'
         knee_name = 'Femur'
@@ -118,7 +119,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 1.0
+        base_height_target = 1.1
         only_positive_rewards = False
 
         max_contact_force = 500  # forces above this value are penalized
@@ -137,9 +138,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
             base_lin_acc = -0.00001
             base_ang_acc = -0.00001
 
-            tracking_x_vel = 5.0
-            tracking_y_vel = 5.0
-            tracking_ang_vel = 5.0
+            tracking_x_vel = 10.0
+            tracking_y_vel = 10.0
+            tracking_ang_vel = 10.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             orientation = -1.0
@@ -149,9 +150,9 @@ class KBotRoughCfg( LeggedRobotCfg ):
             action_rate = -0.1
             smoothness = -0.05
             
-            alive = 1.0
+            alive = 5.0
             feet_height = -20.0 #-0.2
-            stand_still = -10.0
+            stand_still = -50.0
             #contact = 1.0
             #contact_no_vel = -0.2
             contact_stand_still = 20.0
@@ -161,11 +162,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
             feet_contact_forces = -0.1
             stumble = -1000.0
             single_foot = 1.0
-            #close_to_home = 50.0
+            close_to_home = 1000.0
 
             #ankle_deviation = -0.1
             ankle_pos_limits = -10.0
             ankle_acc = -1e-7
+            ankle_torques = -1e-3
+            ankle_torque_limits = -2e-1
             collision = 0.0
             joint_power = -2e-5
 

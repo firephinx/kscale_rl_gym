@@ -804,6 +804,14 @@ class LeggedRobot(BaseTask):
         # penalize torques too close to the limit
         return torch.sum((torch.abs(self.torques[:,self.non_arm_indices]) - self.torque_limits[self.non_arm_indices].unsqueeze(0)*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
 
+    def _reward_ankle_torques(self):
+        # Penalize torques
+        return torch.sum(torch.square(self.torques[:,self.ankle_indices]), dim=1)
+
+    def _reward_ankle_torque_limits(self):
+        # penalize torques too close to the limit
+        return torch.sum((torch.abs(self.torques[:,self.ankle_indices]) - self.torque_limits[self.ankle_indices].unsqueeze(0)*self.cfg.rewards.soft_torque_limit).clip(min=0.), dim=1)
+
     def _reward_dof_vel(self):
         # Penalize dof velocities
         return torch.sum(torch.square(self.dof_vel[:,self.non_arm_indices]), dim=1)
