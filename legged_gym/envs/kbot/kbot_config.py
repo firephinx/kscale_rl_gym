@@ -154,7 +154,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             action_rate = -0.1
             smoothness = -0.05
             
-            alive = 10.0
+            alive = 5.0
             feet_height = -20.0 #-0.2
             stand_still = -20.0
             #contact = 1.0
@@ -165,13 +165,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
             feet_air_time = 10.0
             feet_contact_forces = -0.1
             stumble = -1000.0
-            single_foot = 1.0
+            single_foot = 5.0
             close_to_home = 100.0
 
             #ankle_deviation = -0.1
             ankle_pos_limits = -10.0
-            ankle_acc = -1e-7
-            #ankle_torques = -1e-3
+            ankle_acc = -1e-6
+            ankle_torques = -1e-3
             #ankle_torque_limits = -2e-1
             collision = 0.0
             joint_power = -2e-5
