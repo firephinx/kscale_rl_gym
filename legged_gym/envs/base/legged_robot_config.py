@@ -124,9 +124,12 @@ class LeggedRobotCfg(BaseConfig):
         soft_torque_limit = 1.
         base_height_target = 1.
         max_contact_force = 100. # forces above this value are penalized
+        action_rate_loss = 'l1'
         ankle_deviation_loss = 'l1'
+        base_height_loss = 'l1'
         hip_deviation_loss = 'l1'
         arm_deviation_loss = 'l1'
+        smoothness_loss = 'l1'
 
     class normalization:
         class obs_scales:
@@ -175,7 +178,7 @@ class LeggedRobotCfg(BaseConfig):
             contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
 class LeggedRobotCfgPPO(BaseConfig):
-    seed = 1
+    seed = 42
     runner_class_name = 'OnPolicyRunner'
     class policy:
         init_noise_std = 1.0

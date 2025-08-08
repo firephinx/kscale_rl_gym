@@ -227,21 +227,21 @@ joint_names = ['dof_left_hip_pitch_04',
 
 _INIT_JOINT_POS = torch.tensor(
         [
-            math.radians(20.0),  # dof_left_hip_pitch_04
+            math.radians(10.0),  # dof_left_hip_pitch_04
             0.0,  # dof_left_hip_roll_03
             0.0,  # dof_left_hip_yaw_03
-            math.radians(50.0),  # dof_left_knee_04
-            math.radians(-30.0),  # dof_left_ankle_02
+            math.radians(30.0),  # dof_left_knee_04
+            math.radians(-20.0),  # dof_left_ankle_02
             0.0,  # dof_left_shoulder_pitch_03
             math.radians(10.0),  # dof_left_shoulder_roll_03
             0.0,  # dof_left_shoulder_yaw_02
             math.radians(-90.0),  # dof_left_elbow_02
             0.0,  # dof_left_wrist_00
-            math.radians(-20.0),  # dof_right_hip_pitch_04
+            math.radians(-10.0),  # dof_right_hip_pitch_04
             0.0,  # dof_right_hip_roll_03
             0.0,  # dof_right_hip_yaw_03
-            math.radians(-50.0),  # dof_right_knee_04
-            math.radians(30.0),  # dof_right_ankle_02
+            math.radians(-30.0),  # dof_right_knee_04
+            math.radians(20.0),  # dof_right_ankle_02
             0.0,  # dof_right_shoulder_pitch_03
             math.radians(-10.0),  # dof_right_shoulder_roll_03
             0.0,  # dof_right_shoulder_yaw_02
@@ -255,7 +255,7 @@ _INIT_JOINT_POS = torch.tensor(
             # 0.0,  # dof_left_shoulder_pitch_03
             # math.radians(10.0),  # dof_left_shoulder_roll_03
             # 0.0,  # dof_left_shoulder_yaw_02
-            # 0.0,  # dof_left_elbow_02
+            # math.radians(-90.0),  # dof_left_elbow_02
             # 0.0,  # dof_left_wrist_00
             # 0.0,  # dof_right_hip_pitch_04
             # 0.0,  # dof_right_hip_roll_03
@@ -265,7 +265,7 @@ _INIT_JOINT_POS = torch.tensor(
             # 0.0,  # dof_right_shoulder_pitch_03
             # math.radians(-10.0),  # dof_right_shoulder_roll_03
             # 0.0,  # dof_right_shoulder_yaw_02
-            # 0.0,  # dof_right_elbow_02
+            # math.radians(90.0),  # dof_right_elbow_02
             # 0.0,  # dof_right_wrist_00
         ]
     )
@@ -274,7 +274,7 @@ _JOINT_LIMITS = torch.tensor(
         [[-0.9656,  2.1350],
         [-0.1475,  2.2070],
         [-1.4923,  1.4923],
-        [ 0.0676,  2.6376],
+        [ 0.0,  2.6376],
         [-1.2195,  0.1898],
         [-1.2828,  3.0281],
         [-0.2989,  1.6079],
@@ -284,7 +284,7 @@ _JOINT_LIMITS = torch.tensor(
         [-2.1350,  0.9656],
         [-2.2070,  0.1475],
         [-1.4923,  1.4923],
-        [-2.6376, -0.0676],
+        [-2.6376, 0.0],
         [-0.1898,  1.2195],
         [-3.0281,  1.2828],
         [-1.6079,  0.2989],

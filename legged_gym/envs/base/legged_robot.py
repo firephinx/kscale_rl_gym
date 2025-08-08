@@ -794,7 +794,11 @@ class LeggedRobot(BaseTask):
     def _reward_base_height(self):
         # Penalize base height away from target
         base_height = self.root_states[:, 2]
-        return torch.square(base_height - self.cfg.rewards.base_height_target)
+
+        if self.cfg.rewards.base_height_loss == 'l1':
+            return torch.abs(base_height - self.cfg.rewards.base_height_target)
+        elif self.cfg.rewards.base_height_loss == 'l2':
+            return torch.square(base_height - self.cfg.rewards.base_height_target)
     
     def _reward_torques(self):
         # Penalize torques
@@ -824,17 +828,23 @@ class LeggedRobot(BaseTask):
         # Penalize base accelerations
         return torch.sum(torch.square((self.last_base_lin_vel - self.base_lin_vel) / self.dt), dim=1)
 
-    def _reward_base_ang_acc(self):
+    def _reward_ang_acc_xy(self):
         # Penalize base accelerations
-        return torch.sum(torch.square((self.last_base_ang_vel - self.base_ang_vel) / self.dt), dim=1)
+        return torch.sum(torch.square((self.last_base_ang_vel[:,:2] - self.base_ang_vel[:,:2]) / self.dt), dim=1)
     
     def _reward_action_rate(self):
         # Penalize changes in actions
-        return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
+        if self.cfg.rewards.action_rate_loss == 'l1':
+            return torch.sum(torch.abs(self.last_actions - self.actions), dim=1)
+        elif self.cfg.rewards.action_rate_loss == 'l2':
+            return torch.sum(torch.square(self.last_actions - self.actions), dim=1)
         
     def _reward_smoothness(self):
         # second order smoothness
-        return torch.sum(torch.square(self.actions - self.last_actions - self.last_actions + self.last_last_actions), dim=1)
+        if self.cfg.rewards.smoothness_loss == 'l1':
+            return torch.sum(torch.abs(self.actions - self.last_actions - self.last_actions + self.last_last_actions), dim=1)
+        elif self.cfg.rewards.smoothness_loss == 'l2':
+            return torch.sum(torch.square(self.actions - self.last_actions - self.last_actions + self.last_last_actions), dim=1)
 
     def _reward_collision(self):
         # Penalize collisions on selected bodies
