@@ -227,25 +227,25 @@ joint_names = ['dof_left_hip_pitch_04',
 
 _INIT_JOINT_POS = torch.tensor(
         [
-            math.radians(10.0),  # dof_left_hip_pitch_04
+            math.radians(0.0),  # dof_left_hip_pitch_04
             0.0,  # dof_left_hip_roll_03
             0.0,  # dof_left_hip_yaw_03
-            math.radians(30.0),  # dof_left_knee_04
-            math.radians(-20.0),  # dof_left_ankle_02
+            math.radians(0.0),  # dof_left_knee_04
+            math.radians(-5.0),  # dof_left_ankle_02
             0.0,  # dof_left_shoulder_pitch_03
             math.radians(10.0),  # dof_left_shoulder_roll_03
             0.0,  # dof_left_shoulder_yaw_02
-            math.radians(-90.0),  # dof_left_elbow_02
+            math.radians(0.0),  # dof_left_elbow_02
             0.0,  # dof_left_wrist_00
-            math.radians(-10.0),  # dof_right_hip_pitch_04
+            math.radians(0.0),  # dof_right_hip_pitch_04
             0.0,  # dof_right_hip_roll_03
             0.0,  # dof_right_hip_yaw_03
-            math.radians(-30.0),  # dof_right_knee_04
-            math.radians(20.0),  # dof_right_ankle_02
+            math.radians(0.0),  # dof_right_knee_04
+            math.radians(5.0),  # dof_right_ankle_02
             0.0,  # dof_right_shoulder_pitch_03
             math.radians(-10.0),  # dof_right_shoulder_roll_03
             0.0,  # dof_right_shoulder_yaw_02
-            math.radians(90.0),  # dof_right_elbow_02
+            math.radians(0.0),  # dof_right_elbow_02
             0.0,  # dof_right_wrist_00
             # 0.0,  # dof_left_hip_pitch_04
             # 0.0,  # dof_left_hip_roll_03
@@ -271,31 +271,31 @@ _INIT_JOINT_POS = torch.tensor(
     )
 
 _JOINT_LIMITS = torch.tensor(
-        [[-0.9656,  2.1350],
-        [-0.1475,  2.2070],
-        [-1.4923,  1.4923],
-        [ 0.0,  2.6376],
-        [-1.2195,  0.1898],
-        [-1.2828,  3.0281],
-        [-0.2989,  1.6079],
-        [-1.5752,  1.5752],
-        [-2.4164, -0.0620],
-        [-1.6581,  1.6581],
-        [-2.1350,  0.9656],
-        [-2.2070,  0.1475],
-        [-1.4923,  1.4923],
-        [-2.6376, 0.0],
-        [-0.1898,  1.2195],
-        [-3.0281,  1.2828],
-        [-1.6079,  0.2989],
-        [-1.5752,  1.5752],
-        [ 0.0620,  2.4164],
-        [-1.6581,  1.6581]]
+        [[-1.0,  2.2],
+        [-0.2,  2.25],
+        [-1.55,  1.55],
+        [ 0.01,  2.7],
+        [-1.25,  0.22],
+        [-1.39,  3.14],
+        [-0.34,  1.65],
+        [-1.65,  1.65],
+        [-2.47,  0.01],
+        [-1.74,  1.74],
+        [-2.21,  1.04],
+        [-2.26,  0.2],
+        [-1.57,  1.57],
+        [-2.7,  0.01],
+        [-0.22,  1.25],
+        [-3.14,  1.39],
+        [-1.65,  0.34],
+        [-1.65,  1.65],
+        [ 0.01,  2.47],
+        [-1.74,  1.74]]
     )
 
 NUM_JOINTS = len(joint_names)
 NUM_COMMANDS = 3
-NUM_ACTIONS = 10
+NUM_ACTIONS = 12
 
 # Get carry shape from the exporter
 CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS)
@@ -367,10 +367,10 @@ def _step_fn(
     
     clamped_actions = torch.cat(
         (
-            (actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
-            _INIT_JOINT_POS[5:10],
-            (actions[5:] * ACTION_SCALE) + _INIT_JOINT_POS[10:15],
-            _INIT_JOINT_POS[15:],
+            (actions[:6] * ACTION_SCALE) + _INIT_JOINT_POS[:6],
+            _INIT_JOINT_POS[6:10],
+            (actions[6:] * ACTION_SCALE) + _INIT_JOINT_POS[10:16],
+            _INIT_JOINT_POS[16:],
         ),
         dim=-1,
     )

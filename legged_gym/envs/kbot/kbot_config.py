@@ -6,32 +6,32 @@ class KBotRoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 1.1] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-           'dof_left_hip_pitch_04' : math.radians(10.0), # math.radians(20.0),
+           'dof_left_hip_pitch_04' : 0., # math.radians(20.0),
            'dof_left_hip_roll_03': 0.,
            'dof_left_hip_yaw_03': 0.,
-           'dof_left_knee_04': math.radians(30.0), #math.radians(50.0),
-           'dof_left_ankle_02':  math.radians(-20.0),   # math.radians(-30.0),   
+           'dof_left_knee_04': 0., #math.radians(50.0),
+           'dof_left_ankle_02':  math.radians(-5.0),   # math.radians(-30.0),   
            'dof_left_shoulder_pitch_03' : 0.,        
            'dof_left_shoulder_roll_03': math.radians(10.0),
            'dof_left_shoulder_yaw_02': 0.,
-           'dof_left_elbow_02': math.radians(-90.0),
+           'dof_left_elbow_02': 0., #math.radians(-90.0),
            'dof_left_wrist_00': 0.,
-           'dof_right_hip_pitch_04' : math.radians(-10.0), #math.radians(-20.0),
+           'dof_right_hip_pitch_04' : 0., #math.radians(-20.0),
            'dof_right_hip_roll_03': 0.,
            'dof_right_hip_yaw_03': 0.,
-           'dof_right_knee_04': math.radians(-30.0), #math.radians(-50.0),
-           'dof_right_ankle_02': math.radians(20.0), #math.radians(30.0),
+           'dof_right_knee_04': 0., #math.radians(-50.0),
+           'dof_right_ankle_02': math.radians(5.0), #math.radians(30.0),
            'dof_right_shoulder_pitch_03' : 0.,   
            'dof_right_shoulder_roll_03': math.radians(-10.0),
            'dof_right_shoulder_yaw_02': 0.,
-           'dof_right_elbow_02': math.radians(90.0),
+           'dof_right_elbow_02': 0., #math.radians(90.0),
            'dof_right_wrist_00': 0.,
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 59
-        num_privileged_obs = 62
-        num_actions = 10
+        num_observations = 61
+        num_privileged_obs = 64
+        num_actions = 12
         num_joints = 20
 
     class commands(LeggedRobotCfg.commands):
@@ -112,6 +112,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         foot_name = 'LEG_FOOT'
         knee_name = 'Femur'
         imu_name = "imu"
+        shoulder_pitch = ['shoulder_pitch']
         arm_names = ["shoulder", "elbow", "wrist"]
         hip_names = ['hip_roll', 'hip_yaw']
         ankle_names = ['ankle']
@@ -128,54 +129,55 @@ class KBotRoughCfg( LeggedRobotCfg ):
 
         max_contact_force = 500  # forces above this value are penalized
         feet_height_target = 0.15
-        close_to_home_threshold = 0.15
+        close_to_home_threshold = 0.175
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -3e-5
-            torque_limits = -2e-1
-            dof_pos_limits = -100.0
+            torques = -9e-5*1.25
+            torque_limits = -2e-1*1.25
+            dof_pos_limits = -100.0*1.25
 
-            slippage = -3.0
+            slippage = -3.0 * 1.25
             #feet_slip = -3.0
-            feet_ori = -5.0
+            feet_ori = -1.0
 
             #base_lin_acc = -0.00001
             
-            tracking_x_vel = 15.0
-            tracking_y_vel = 15.0
-            tracking_ang_vel = 20.0
+            tracking_x_vel = 5.0
+            tracking_y_vel = 5.0
+            tracking_ang_vel = 10.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
-            ang_acc_xy = -1e-4
+            #ang_acc_xy = -1e-4
             orientation = -1.0
-            base_height = -20.0
+            base_height = -10.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
             action_rate = -0.1
             smoothness = -0.05
             
-            alive = 10.0
-            feet_height = -20.0 #-0.2
+            alive = 4.2
+            feet_height = -10.0 #-0.2
             stand_still = -20.0
-            contact = 1.0
-            #contact_no_vel = -0.2
-            contact_stand_still = 50.0
+            #contact = 1.0
+            contact_no_vel = -0.2
+            contact_stand_still = 20.0
 
-            hip_deviation = -10.0
-            feet_air_time = 20.0
+            hip_deviation = -3.0
+            feet_air_time = 10.0
             feet_contact_forces = -0.1
-            stumble = -1000.0
-            single_foot = 5.0
-            close_to_home = 100.0
+            stumble = -1000.0 * 1.25
+            #single_foot = 5.0
+            #close_to_home = 10.0
 
-            ankle_deviation = -1.0
-            ankle_pos_limits = -100.0
-            ankle_vel = -1e-2
-            ankle_acc = -5e-6
-            ankle_torques = -1e-3
-            ankle_torque_limits = -2e-1
+            #ankle_deviation = -1.0
+            #ankle_pos_limits = -100.0
+            #ankle_vel = -1e-3
+            #ankle_acc = -1e-6
+            #ankle_torques = -1e-3
+            #ankle_torque_limits = -2e-1
             collision = 0.0
-            joint_power = -2e-5
+            #joint_power = -2e-5
+            arms_close_to_zero = 3.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
