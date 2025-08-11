@@ -43,17 +43,17 @@ class KBotRoughCfg( LeggedRobotCfg ):
         heading_command = False # if true: compute ang vel command from heading error
         bias_percentage_stand_still = 0.3
         class ranges:
-            # lin_vel_x = [-1.5, 1.5] # min max [m/s]
-            # lin_vel_y = [-0.5, 0.5]   # min max [m/s]
-            # ang_vel_yaw = [-1,1]    # min max [rad/s]
+            lin_vel_x = [-1.0, 1.0] # min max [m/s]
+            lin_vel_y = [-0.5, 0.5]   # min max [m/s]
+            ang_vel_yaw = [-1,1]    # min max [rad/s]
 
             # lin_vel_x = [0.0, 0.0] # min max [m/s]
             # lin_vel_y = [0.0, 0.0]   # min max [m/s]
             # ang_vel_yaw = [0,0]    # min max [rad/s]
 
-            lin_vel_x = [-0.5, 0.5] # min max [m/s]
-            lin_vel_y = [-0.5, 0.5]   # min max [m/s]
-            ang_vel_yaw = [-0.5,0.5]    # min max [rad/s]
+            # lin_vel_x = [-0.5, 0.5] # min max [m/s]
+            # lin_vel_y = [-0.5, 0.5]   # min max [m/s]
+            # ang_vel_yaw = [-0.5,0.5]    # min max [rad/s]
 
 
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -131,19 +131,19 @@ class KBotRoughCfg( LeggedRobotCfg ):
         close_to_home_threshold = 0.15
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -3e-4
+            torques = -3e-5
             torque_limits = -2e-1
             dof_pos_limits = -100.0
 
-            #slippage = -3.0
-            feet_slip = -3.0
-            feet_ori = -1.0
+            slippage = -3.0
+            #feet_slip = -3.0
+            feet_ori = -5.0
 
-            base_lin_acc = -0.00001
+            #base_lin_acc = -0.00001
             
-            tracking_x_vel = 5.0
-            tracking_y_vel = 5.0
-            tracking_ang_vel = 5.0
+            tracking_x_vel = 15.0
+            tracking_y_vel = 15.0
+            tracking_ang_vel = 20.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             ang_acc_xy = -1e-4
@@ -154,33 +154,34 @@ class KBotRoughCfg( LeggedRobotCfg ):
             action_rate = -0.1
             smoothness = -0.05
             
-            alive = 5.0
+            alive = 10.0
             feet_height = -20.0 #-0.2
             stand_still = -20.0
-            #contact = 1.0
+            contact = 1.0
             #contact_no_vel = -0.2
-            contact_stand_still = 20.0
+            contact_stand_still = 50.0
 
-            hip_deviation = -3.0
-            feet_air_time = 10.0
+            hip_deviation = -10.0
+            feet_air_time = 20.0
             feet_contact_forces = -0.1
             stumble = -1000.0
             single_foot = 5.0
             close_to_home = 100.0
 
-            #ankle_deviation = -0.1
-            ankle_pos_limits = -10.0
-            ankle_acc = -1e-6
+            ankle_deviation = -1.0
+            ankle_pos_limits = -100.0
+            ankle_vel = -1e-2
+            ankle_acc = -5e-6
             ankle_torques = -1e-3
-            #ankle_torque_limits = -2e-1
+            ankle_torque_limits = -2e-1
             collision = 0.0
             joint_power = -2e-5
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
     class policy:
         init_noise_std = 0.8
-        actor_hidden_dims = [512, 256, 128]
-        critic_hidden_dims = [512, 256, 128]
+        actor_hidden_dims = [256, 128]
+        critic_hidden_dims = [256, 128]
         activation = 'elu' # can be elu, relu, selu, crelu, lrelu, tanh, sigmoid
         # only for 'ActorCriticRecurrent':
         # rnn_type = 'lstm'

@@ -106,8 +106,8 @@ class KBot(LeggedRobot):
         return res
 
     def _reward_contact_stand_still(self):
-        left_contact = self.contact_forces[:, self.feet_indices[0], 2] > 1
-        right_contact = self.contact_forces[:, self.feet_indices[1], 2] > 1
+        left_contact = self.contact_forces[:, self.feet_indices[0], 2] > 50
+        right_contact = self.contact_forces[:, self.feet_indices[1], 2] > 50
         
         return left_contact * right_contact * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
     
