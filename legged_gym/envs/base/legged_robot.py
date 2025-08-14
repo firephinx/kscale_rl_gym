@@ -367,11 +367,12 @@ class LeggedRobot(BaseTask):
         """
         #pd controller
         actions_scaled = actions * self.cfg.control.action_scale
-        zeros = torch.zeros(self.num_envs, 4, dtype=torch.float, device=self.device, requires_grad=False)
+        zeros = torch.zeros(self.num_envs, 2, dtype=torch.float, device=self.device, requires_grad=False)
         #randomized_arm_dof_pos = torch_rand_float(-0.01, 0.01, (self.num_envs, self.num_arm_joints), device=self.device)
         #self.arm_pos += randomized_arm_dof_pos
         #desired_dof_pos = torch.cat((actions_scaled[:,:5] + self.default_dof_pos[:,:5], self.dof_pos[:,5:10] + randomized_arm_dof_pos[:,:5], actions_scaled[:,5:] + self.default_dof_pos[:,10:15], self.dof_pos[:,15:] + randomized_arm_dof_pos[:,5:]),dim=1)
-        desired_dof_pos = torch.cat((actions_scaled[:,:6] + self.default_dof_pos[:,:6], zeros + self.default_dof_pos[:,6:10], actions_scaled[:,6:] + self.default_dof_pos[:,10:16], zeros + self.default_dof_pos[:,16:]),dim=1)
+        desired_dof_pos = torch.cat((actions_scaled[:,:6] + self.default_dof_pos[:,:6], zeros + self.default_dof_pos[:,6:8], (actions_scaled[:,6] + self.default_dof_pos[:,8]).unsqueeze(1), (zeros[:,0] + self.default_dof_pos[:,9]).unsqueeze(1), 
+                                     actions_scaled[:,7:13] + self.default_dof_pos[:,10:16], zeros + self.default_dof_pos[:,16:18], (actions_scaled[:,13] + self.default_dof_pos[:,18]).unsqueeze(1), (zeros[:,0] + self.default_dof_pos[:,19]).unsqueeze(1)),dim=1)
         control_type = self.cfg.control.control_type
         if control_type=="P":
             if self.cfg.domain_rand.randomize_gains:
@@ -571,16 +572,16 @@ class LeggedRobot(BaseTask):
         hip_indices = []
         knee_indices = []
         ankle_indices = []
-        shoulder_pitch_indices = []
+        arm_control_indices = []
         for i in range(self.num_dofs):
             name = self.dof_names[i]
             print(name)
             for s in self.cfg.asset.arm_names:
                 if s in name:
                     arm_indices.append(i)
-            for s in self.cfg.asset.shoulder_pitch:
+            for s in self.cfg.asset.arm_control:
                 if s in name:
-                    shoulder_pitch_indices.append(i)
+                    arm_control_indices.append(i)
             for s in self.cfg.asset.hip_names:
                 if s in name:
                     hip_indices.append(i)
@@ -606,7 +607,7 @@ class LeggedRobot(BaseTask):
 
         self.arm_indices = torch.tensor(arm_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.action_indices = torch.tensor(action_indices, dtype=torch.long, device=self.device, requires_grad=False)
-        self.shoulder_pitch_indices = torch.tensor(shoulder_pitch_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        self.arm_control_indices = torch.tensor(arm_control_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.hip_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.knee_indices = torch.tensor(knee_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.ankle_indices = torch.tensor(ankle_indices, dtype=torch.long, device=self.device, requires_grad=False)
@@ -892,6 +893,21 @@ class LeggedRobot(BaseTask):
         ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2]) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
         return torch.exp(-ang_vel_error/self.cfg.rewards.tracking_sigma)
 
+    def _reward_neg_tracking_x_vel(self):
+        # Tracking of linear velocity commands (xy axes)
+        lin_vel_error = torch.sum(torch.square(self.commands[:, :1] - self.base_lin_vel[:, :1]), dim=1)
+        return lin_vel_error
+    
+    def _reward_neg_tracking_y_vel(self):
+        # Tracking of linear velocity commands (xy axes)
+        lin_vel_error = torch.sum(torch.square(self.commands[:, 1:2] - self.base_lin_vel[:, 1:2]), dim=1)
+        return lin_vel_error
+    
+    def _reward_neg_tracking_ang_vel(self):
+        # Tracking of angular velocity commands (yaw) 
+        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2]) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        return ang_vel_error
+
     def _reward_single_foot(self):
         left_feet_contact = self.contact_forces[:, self.feet_indices[0], 2] > 1.
         right_feet_contact = self.contact_forces[:, self.feet_indices[1], 2] > 1.
@@ -963,4 +979,4 @@ class LeggedRobot(BaseTask):
 
     def _reward_arms_close_to_zero(self):
         # Reward leg dof positions close to default dof pos at zero commands
-        return (torch.norm(self.dof_pos[:,self.shoulder_pitch_indices] - self.default_dof_pos[:,self.shoulder_pitch_indices], dim=1) < self.cfg.rewards.close_to_home_threshold)
+        return (torch.norm(self.dof_pos[:,self.arm_control_indices] - self.default_dof_pos[:,self.arm_control_indices], dim=1) < self.cfg.rewards.close_to_home_threshold)
