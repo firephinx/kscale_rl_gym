@@ -568,7 +568,8 @@ class LeggedRobot(BaseTask):
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         arm_indices = []
-        action_indices = [0,1,2,3,4,5,10,11,12,13,14,15]
+        shoulder_pitch_indices = []
+        action_indices = [0,1,2,3,4,5,8,10,11,12,13,14,15,18]
         hip_indices = []
         knee_indices = []
         ankle_indices = []
@@ -579,6 +580,9 @@ class LeggedRobot(BaseTask):
             for s in self.cfg.asset.arm_names:
                 if s in name:
                     arm_indices.append(i)
+            for s in self.cfg.asset.shoulder_pitch_names:
+                if s in name:
+                    shoulder_pitch_indices.append(i)
             for s in self.cfg.asset.arm_control:
                 if s in name:
                     arm_control_indices.append(i)
@@ -606,6 +610,7 @@ class LeggedRobot(BaseTask):
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
 
         self.arm_indices = torch.tensor(arm_indices, dtype=torch.long, device=self.device, requires_grad=False)
+        self.shoulder_pitch_indices = torch.tensor(shoulder_pitch_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.action_indices = torch.tensor(action_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.arm_control_indices = torch.tensor(arm_control_indices, dtype=torch.long, device=self.device, requires_grad=False)
         self.hip_indices = torch.tensor(hip_indices, dtype=torch.long, device=self.device, requires_grad=False)
@@ -880,32 +885,32 @@ class LeggedRobot(BaseTask):
 
     def _reward_tracking_x_vel(self):
         # Tracking of linear velocity commands (xy axes)
-        lin_vel_error = torch.sum(torch.square(self.commands[:, :1] - self.base_lin_vel[:, :1]), dim=1)
+        lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
         return torch.exp(-lin_vel_error/self.cfg.rewards.tracking_sigma)
     
     def _reward_tracking_y_vel(self):
         # Tracking of linear velocity commands (xy axes)
-        lin_vel_error = torch.sum(torch.square(self.commands[:, 1:2] - self.base_lin_vel[:, 1:2]), dim=1)
+        lin_vel_error = torch.square(self.commands[:, 1] - self.base_lin_vel[:, 1])
         return torch.exp(-lin_vel_error/self.cfg.rewards.tracking_sigma)
     
     def _reward_tracking_ang_vel(self):
         # Tracking of angular velocity commands (yaw) 
-        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2]) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
         return torch.exp(-ang_vel_error/self.cfg.rewards.tracking_sigma)
 
     def _reward_neg_tracking_x_vel(self):
         # Tracking of linear velocity commands (xy axes)
-        lin_vel_error = torch.sum(torch.square(self.commands[:, :1] - self.base_lin_vel[:, :1]), dim=1)
+        lin_vel_error = torch.square(self.commands[:, 0] - self.base_lin_vel[:, 0])
         return lin_vel_error
     
     def _reward_neg_tracking_y_vel(self):
         # Tracking of linear velocity commands (xy axes)
-        lin_vel_error = torch.sum(torch.square(self.commands[:, 1:2] - self.base_lin_vel[:, 1:2]), dim=1)
+        lin_vel_error = torch.square(self.commands[:, 1] - self.base_lin_vel[:, 1])
         return lin_vel_error
     
     def _reward_neg_tracking_ang_vel(self):
         # Tracking of angular velocity commands (yaw) 
-        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2]) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        ang_vel_error = torch.square(self.commands[:, 2] - self.base_ang_vel[:, 2])
         return ang_vel_error
 
     def _reward_single_foot(self):
@@ -980,3 +985,7 @@ class LeggedRobot(BaseTask):
     def _reward_arms_close_to_zero(self):
         # Reward leg dof positions close to default dof pos at zero commands
         return (torch.norm(self.dof_pos[:,self.arm_control_indices] - self.default_dof_pos[:,self.arm_control_indices], dim=1) < self.cfg.rewards.close_to_home_threshold)
+
+    def _reward_shoulder_pitch_close(self):
+        # Reward shoulder pitch positions close to each other
+        return torch.square(self.dof_pos[:,self.shoulder_pitch_indices[0]] - self.dof_pos[:,self.shoulder_pitch_indices[1]])

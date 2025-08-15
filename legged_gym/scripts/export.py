@@ -369,12 +369,12 @@ def _step_fn(
         (
             (actions[:6] * ACTION_SCALE) + _INIT_JOINT_POS[:6],
             _INIT_JOINT_POS[6:8],
-            (actions[6] * ACTION_SCALE) + _INIT_JOINT_POS[8],
-            _INIT_JOINT_POS[9],
+            ((actions[6] * ACTION_SCALE) + _INIT_JOINT_POS[8]).unsqueeze(0),
+            _INIT_JOINT_POS[9].unsqueeze(0),
             (actions[7:13] * ACTION_SCALE) + _INIT_JOINT_POS[10:16],
             _INIT_JOINT_POS[16:18],
-            (actions[13] * ACTION_SCALE) + _INIT_JOINT_POS[18],
-            _INIT_JOINT_POS[19],
+            ((actions[13] * ACTION_SCALE) + _INIT_JOINT_POS[18]).unsqueeze(0),
+            _INIT_JOINT_POS[19].unsqueeze(0),
         ),
         dim=-1,
     )
