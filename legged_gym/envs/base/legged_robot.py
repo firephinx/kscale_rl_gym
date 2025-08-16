@@ -986,6 +986,10 @@ class LeggedRobot(BaseTask):
         # Reward leg dof positions close to default dof pos at zero commands
         return (torch.norm(self.dof_pos[:,self.arm_control_indices] - self.default_dof_pos[:,self.arm_control_indices], dim=1) < self.cfg.rewards.close_to_home_threshold)
 
+    def _reward_arm_movement(self):
+        # Reward leg dof positions close to default dof pos at zero commands
+        return torch.sum(torch.square(self.dof_pos[:,self.arm_control_indices] - self.default_dof_pos[:,self.arm_control_indices]), dim=1)
+
     def _reward_shoulder_pitch_close(self):
         # Reward shoulder pitch positions close to each other
         return torch.square(self.dof_pos[:,self.shoulder_pitch_indices[0]] - self.dof_pos[:,self.shoulder_pitch_indices[1]])

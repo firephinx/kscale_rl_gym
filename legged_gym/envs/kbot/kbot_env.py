@@ -99,10 +99,18 @@ class KBot(LeggedRobot):
     def _reward_contact(self):
         res = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
-        for i in range(self.feet_num):
-            is_stance = (self.leg_phase[:, i] < 0.55) 
-            contact = self.contact_forces[:, self.feet_indices[i], 2] > 1
-            res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        is_stance = (self.leg_phase[:, 0] < 0.55) 
+        contact = self.contact_forces[:, self.feet_indices[0], 2] > 1
+        left_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[0]] < 0
+        right_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[1]] < 0
+        res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.1) * (left_arm_pitch & right_arm_pitch)
+
+        is_stance = (self.leg_phase[:, 1] < 0.55) 
+        contact = self.contact_forces[:, self.feet_indices[1], 2] > 1
+        left_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[0]] > 0
+        right_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[1]] > 0
+        res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.1) * (left_arm_pitch & right_arm_pitch)
+            
         return res
 
     def _reward_contact_stand_still(self):

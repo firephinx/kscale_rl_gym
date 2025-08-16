@@ -124,7 +124,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
         flip_visual_attachments = False
   
     class rewards( LeggedRobotCfg.rewards ):
-        soft_dof_pos_limit = 0.9
+        soft_dof_pos_limit = 0.95
         base_height_target = 1.0
         only_positive_rewards = False
 
@@ -143,12 +143,12 @@ class KBotRoughCfg( LeggedRobotCfg ):
 
             #base_lin_acc = -0.00001
             
-            tracking_x_vel = 20.0
-            tracking_y_vel = 20.0
-            tracking_ang_vel = 20.0
+            tracking_x_vel = 8.0
+            tracking_y_vel = 8.0
+            tracking_ang_vel = 8.0
             neg_tracking_x_vel = -10.0
             neg_tracking_y_vel = -10.0
-            neg_tracking_ang_vel = -0.5
+            neg_tracking_ang_vel = -15.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             #ang_acc_xy = -1e-4
@@ -156,13 +156,13 @@ class KBotRoughCfg( LeggedRobotCfg ):
             base_height = -10.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
-            action_rate = -0.1
-            smoothness = -0.05
+            action_rate = -0.25
+            smoothness = -0.125
             
-            alive = 10.0
+            alive = 3.0
             feet_height = -20.0 #-0.2
-            stand_still = -1.0
-            #contact = 1.0
+            stand_still = -2.0
+            contact = 5.0
             #contact_no_vel = -0.2
             contact_stand_still = 50.0
 
@@ -170,8 +170,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
             feet_air_time = 20.0
             feet_contact_forces = -0.1
             stumble = -1000.0 * 1.25
-            single_foot = 5.0
-            close_to_home = 20.0
+            single_foot = 4.0
+            close_to_home = 100.0
 
             #ankle_deviation = -1.0
             ankle_pos_limits = -100.0
@@ -181,7 +181,8 @@ class KBotRoughCfg( LeggedRobotCfg ):
             ankle_torque_limits = -2e-1
             collision = 0.0
             joint_power = -2e-4
-            arms_close_to_zero = 3.0
+            arms_close_to_zero = 4.0
+            arm_movement = -0.5
             shoulder_pitch_close = -10.0
 
 class KBotRoughCfgPPO( LeggedRobotCfgPPO ):
