@@ -28,7 +28,7 @@ class KBot(LeggedRobot):
         noise_vec[6:9] = 0. # commands
         noise_vec[9:9+self.num_dof] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
         noise_vec[9+self.num_dof:9+2*self.num_dof] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[9+2*self.num_actions:9+3*self.num_actions] = 0. # previous actions
+        noise_vec[9+2*self.num_dof:9+2*self.num_dof + self.num_actions] = 0. # previous actions
         
         return noise_vec
 
@@ -99,25 +99,17 @@ class KBot(LeggedRobot):
     def _reward_contact(self):
         res = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
-        is_stance = (self.leg_phase[:, 0] < 0.55) 
-        contact = self.contact_forces[:, self.feet_indices[0], 2] > 1
-        left_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[0]] < 0
-        right_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[1]] < 0
-        res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.1) * (left_arm_pitch & right_arm_pitch)
-
-        is_stance = (self.leg_phase[:, 1] < 0.55) 
-        contact = self.contact_forces[:, self.feet_indices[1], 2] > 1
-        left_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[0]] > 0
-        right_arm_pitch = self.dof_pos[:,self.shoulder_pitch_indices[1]] > 0
-        res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.1) * (left_arm_pitch & right_arm_pitch)
-            
+        for i in range(self.feet_num):
+            is_stance = (self.leg_phase[:, i] < 0.55) 
+            contact = self.contact_forces[:, self.feet_indices[i], 2] > 1
+            res += ~(contact ^ is_stance) * (torch.norm(self.commands[:, :2], dim=1) > 0.05)
         return res
 
     def _reward_contact_stand_still(self):
         left_contact = self.contact_forces[:, self.feet_indices[0], 2] > 50
         right_contact = self.contact_forces[:, self.feet_indices[1], 2] > 50
         
-        return left_contact * right_contact * (torch.norm(self.commands[:, :2], dim=1) < 0.1)
+        return left_contact * right_contact * (torch.norm(self.commands[:, :2], dim=1) < 0.05)
     
     def _reward_alive(self):
         # Reward for staying alive
@@ -128,7 +120,7 @@ class KBot(LeggedRobot):
         contact = torch.norm(self.contact_forces[:, self.feet_indices, :3], dim=2) > 1.
         contact_feet_vel = self.feet_vel * contact.unsqueeze(-1)
         penalize = torch.square(contact_feet_vel[:, :, :3])
-        return torch.sum(penalize, dim=(1,2)) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+        return torch.sum(penalize, dim=(1,2)) * (torch.norm(self.commands[:, :2], dim=1) > 0.05)
     
     def _reward_feet_contact_forces(self):
         """Calculates the reward for keeping contact forces within a specified range. Penalizes
@@ -146,7 +138,7 @@ class KBot(LeggedRobot):
         feet_height = self.feet_pos[:, :, 2]
         dif = torch.abs(feet_height - self.cfg.rewards.feet_height_target)
         dif = torch.min(dif, dim=1).values # [num_env], # select the foot closer to target 
-        dif *= torch.norm(self.commands[:, :2], dim=1) > 0.1  #no reward for zero command
+        dif *= torch.norm(self.commands[:, :2], dim=1) > 0.05  #no reward for zero command
         return torch.clip(dif - 0.02, min=0.) # target - 0.02 ~ target + 0.02 is acceptable 
 
     def _reward_feet_ori(self):
@@ -159,7 +151,7 @@ class KBot(LeggedRobot):
     def _reward_slippage(self):
         res = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
         for i in range(self.feet_num):
-            res += torch.norm(self.feet_vel[:,i,:], dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices[i], :], dim=-1) > 1.) * (torch.norm(self.commands[:, :2], dim=1) > 0.1)
+            res += torch.norm(self.feet_vel[:,i,:], dim=-1) * (torch.norm(self.contact_forces[:, self.feet_indices[i], :], dim=-1) > 1.) * (torch.norm(self.commands[:, :2], dim=1) > 0.05)
         return res
 
     def _reward_feet_slip(self): 

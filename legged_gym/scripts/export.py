@@ -295,7 +295,7 @@ _JOINT_LIMITS = torch.tensor(
 
 NUM_JOINTS = len(joint_names)
 NUM_COMMANDS = 3
-NUM_ACTIONS = 14
+NUM_ACTIONS = 10
 
 # Get carry shape from the exporter
 CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS)
@@ -367,14 +367,10 @@ def _step_fn(
     
     clamped_actions = torch.cat(
         (
-            (actions[:6] * ACTION_SCALE) + _INIT_JOINT_POS[:6],
-            _INIT_JOINT_POS[6:8],
-            ((actions[6] * ACTION_SCALE) + _INIT_JOINT_POS[8]).unsqueeze(0),
-            _INIT_JOINT_POS[9].unsqueeze(0),
-            (actions[7:13] * ACTION_SCALE) + _INIT_JOINT_POS[10:16],
-            _INIT_JOINT_POS[16:18],
-            ((actions[13] * ACTION_SCALE) + _INIT_JOINT_POS[18]).unsqueeze(0),
-            _INIT_JOINT_POS[19].unsqueeze(0),
+            (actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
+            _INIT_JOINT_POS[5:10],
+            (actions[5:] * ACTION_SCALE) + _INIT_JOINT_POS[10:15],
+            _INIT_JOINT_POS[15:],
         ),
         dim=-1,
     )
