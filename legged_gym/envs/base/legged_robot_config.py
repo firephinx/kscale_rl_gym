@@ -130,6 +130,8 @@ class LeggedRobotCfg(BaseConfig):
         hip_deviation_loss = 'l1'
         arm_deviation_loss = 'l1'
         smoothness_loss = 'l1'
+        tracking_right_arm_loss = 'l2' # l1 or l2
+        tracking_left_arm_loss = 'l2' # l1 or l2
 
     class normalization:
         class obs_scales:

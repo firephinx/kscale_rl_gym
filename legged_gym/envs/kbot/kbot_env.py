@@ -23,12 +23,14 @@ class KBot(LeggedRobot):
         noise_scales = self.cfg.noise.noise_scales
         noise_level = self.cfg.noise.noise_level
         
+        num_commands = self.cfg.commands.num_commands
+
         noise_vec[:3] = noise_scales.gravity * noise_level
         noise_vec[3:6] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
-        noise_vec[6:9] = 0. # commands
-        noise_vec[9:9+self.num_dof] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[9+self.num_dof:9+2*self.num_dof] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[9+2*self.num_dof:9+2*self.num_dof + self.num_actions] = 0. # previous actions
+        noise_vec[6:6+num_commands] = 0. # commands
+        noise_vec[6+num_commands:6+num_commands+self.num_dof] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+        noise_vec[6+num_commands+self.num_dof:6+num_commands+2*self.num_dof] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[6+num_commands+2*self.num_dof:6+num_commands+2*self.num_dof + self.num_actions] = 0. # previous actions
         
         return noise_vec
 
@@ -75,14 +77,14 @@ class KBot(LeggedRobot):
         # cos_phase = torch.cos(2 * np.pi * self.phase ).unsqueeze(1)
         self.obs_buf = torch.cat((  self.projected_gravity,
                                     self.base_ang_vel  * self.obs_scales.ang_vel,
-                                    self.commands[:, :3] * self.commands_scale,
+                                    self.commands * self.commands_scale,
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
                                     self.actions),dim=-1)
         self.privileged_obs_buf = torch.cat((  self.base_lin_vel * self.obs_scales.lin_vel,
                                     self.base_ang_vel  * self.obs_scales.ang_vel,
                                     self.projected_gravity,
-                                    self.commands[:, :3] * self.commands_scale,
+                                    self.commands * self.commands_scale,
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
                                     self.actions,

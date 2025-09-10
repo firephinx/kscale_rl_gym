@@ -165,6 +165,48 @@ class TorchPolicyExporter(torch.nn.Module):
         return torch.jit.script(self)
 
 
+class ArmMotionGenerator(torch.nn.Module):
+    """TorchScript-friendly stateless wrapper that works for FF, GRU, and LSTM nets."""
+
+    def __init__(self):
+        super().__init__()
+
+        #self.past_command = 0
+        self.forward = self._forward_ff
+
+
+    def _forward_ff(self, command: torch.Tensor, time): #-> torch.Tensor:
+        """Feedforward forward pass (stateless for consistency)."""
+
+        shoulder_pitch = command[0] * torch.sin(time)
+        shoulder_roll = command[1] * torch.sin(time)
+        elbow = -command[0] * torch.sin(time)
+
+        return [shoulder_pitch, shoulder_roll, elbow]
+
+        # if torch.norm(normalized_commands) < 0.1:
+        #     self.past_command = 0
+        #     return [0.0, 0.0, 0.0]
+        # else:
+        #     command_to_execute = torch.argmax(torch.abs(normalized_commands))
+        #     if self.past_command == command_to_execute:
+        #         self.command_time += self.command_dt
+        #     else:
+        #         self.command_time = 0
+        #         self.past_command = command_to_execute
+
+        #     if command_to_execute == 0:
+        #         shoulder_pitch = 1.0 * normalized_commands[0] * torch.sin(self.command_time)
+        #         elbow = -1.0 * normalized_commands[0] * torch.sin(self.command_time)
+        #         return [shoulder_pitch, 0.0, elbow]
+        #     elif command_to_execute == 1:
+        #         shoulder_roll = 0.5 * normalized_commands[1] * torch.sin(self.command_time)
+        #         return [0.0, shoulder_roll, 0.0]
+        #     else:
+        #         return [0.0, 0.0, 0.0]
+        
+
+
 args = get_args()
 env_cfg, train_cfg = task_registry.get_cfgs(name=args.task)
 
@@ -203,6 +245,14 @@ for p in exporter.parameters():
     p.requires_grad_(False)
 
 ts_policy = exporter
+
+amg = ArmMotionGenerator()
+
+amg.to("cpu").eval()
+for p in amg.parameters():
+    p.requires_grad_(False)
+
+arm_policy = amg
 
 joint_names = ['dof_left_hip_pitch_04',
                 'dof_left_hip_roll_03',
@@ -298,7 +348,7 @@ NUM_COMMANDS = 3
 NUM_ACTIONS = 10
 
 # Get carry shape from the exporter
-CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS)
+CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS+1)
 
 ACTION_SCALE = 0.25
 
@@ -327,7 +377,7 @@ def construct_obs_rnn(
             scaled_command,
             offset_joint_angles,
             scaled_joint_angular_velocities,
-            carry
+            carry[:10]
         ),
         dim=-1,
     )
@@ -364,13 +414,25 @@ def _step_fn(
     obs = construct_obs(projected_gravity, joint_angles, joint_angular_velocities, command, gyroscope, carry)
 
     actions, new_carry = ts_policy(obs, carry)
+
+    arm_motions = arm_policy(command, carry[10])
     
+    new_carry = torch.cat((new_carry, (carry[10] + 0.05).unsqueeze(0)))
+
     clamped_actions = torch.cat(
         (
             (actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
-            _INIT_JOINT_POS[5:10],
+            (arm_motions[0] + _INIT_JOINT_POS[5]).unsqueeze(0),
+            (arm_motions[1] + _INIT_JOINT_POS[6]).unsqueeze(0),
+            _INIT_JOINT_POS[7].unsqueeze(0),
+            (arm_motions[2] + _INIT_JOINT_POS[8]).unsqueeze(0),
+            _INIT_JOINT_POS[9].unsqueeze(0),
             (actions[5:] * ACTION_SCALE) + _INIT_JOINT_POS[10:15],
-            _INIT_JOINT_POS[15:],
+            (arm_motions[0] + _INIT_JOINT_POS[15]).unsqueeze(0),
+            (arm_motions[1] + _INIT_JOINT_POS[16]).unsqueeze(0),
+            _INIT_JOINT_POS[17].unsqueeze(0),
+            (arm_motions[2] + _INIT_JOINT_POS[18]).unsqueeze(0),
+            _INIT_JOINT_POS[19].unsqueeze(0),
         ),
         dim=-1,
     )

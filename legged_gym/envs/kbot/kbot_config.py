@@ -29,16 +29,16 @@ class KBotRoughCfg( LeggedRobotCfg ):
         }
     
     class env(LeggedRobotCfg.env):
-        num_observations = 59
-        num_privileged_obs = 62
-        num_actions = 10
+        num_observations = 82
+        num_privileged_obs = 85
+        num_actions = 20
         num_joints = 20
 
     class commands(LeggedRobotCfg.commands):
         curriculum = False
         #num_curriculum_levels = 10
         max_curriculum = 1.
-        num_commands = 3 # default: lin_vel_x, lin_vel_y, ang_vel_yaw
+        num_commands = 16 # default: lin_vel_x, lin_vel_y, ang_vel_yaw, 
         resampling_time = 10. # time before command are changed[s]
         heading_command = False # if true: compute ang vel command from heading error
         bias_percentage_stand_still = 0.3
@@ -110,10 +110,10 @@ class KBotRoughCfg( LeggedRobotCfg ):
         decimation = 4
 
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless/robot.urdf'
         #file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/kbot-headless-full-collisions/robot_stronger_ankle.urdf'
-        name = "kbot"
-        foot_name = 'LEG_FOOT'
+        name = "kd_headless"
+        foot_name = 'Foot'
         knee_name = 'Femur'
         imu_name = "imu"
         shoulder_pitch_names = ['shoulder_pitch']
@@ -138,42 +138,45 @@ class KBotRoughCfg( LeggedRobotCfg ):
         close_to_home_threshold = 1.0
 
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -9e-5*1.25
+            torques = -5e-5*1.25
             torque_limits = -2e-1*1.25
             dof_pos_limits = -100.0*1.25
 
-            slippage = -3.0 * 1.25
+            slippage = -1.0 * 1.25
             #feet_slip = -3.0
-            feet_ori = -1.0
+            feet_ori = -0.5
 
             #base_lin_acc = -0.00001
             
-            tracking_x_vel = 8.0
-            tracking_y_vel = 8.0
+            tracking_x_vel = 5.0
+            tracking_y_vel = 5.0
             tracking_ang_vel = 10.0
+            tracking_base_height = 5.0
+            tracking_right_arm = 2.0
+            tracking_left_arm = 2.0
             #neg_tracking_x_vel = -10.0
             #neg_tracking_y_vel = -10.0
-            #neg_tracking_ang_vel = -5.0
+            #neg_tracking_ang_vel = -3.0
             lin_vel_z = -2.0
             ang_vel_xy = -0.05
             #ang_acc_xy = -1e-4
             orientation = -1.0
-            base_height = -20.0
+            #base_height = -10.0
             dof_acc = -2.5e-7
             dof_vel = -1e-3
-            action_rate = -0.1 #-0.25
-            smoothness = -0.005#-0.125
+            action_rate = -0.01 #-0.25
+            smoothness = -0.005 #-0.125
             
-            alive = 3.0
+            alive = 1.0
             feet_height = -20.0 #-0.2
             #stand_still = -2.0
             #contact = 5.0
             #contact_no_vel = -0.2
             #contact_stand_still = 10.0
 
-            hip_deviation = -5.0
+            hip_deviation = -3.0
             feet_air_time = 20.0
-            feet_contact_forces = -0.1
+            feet_contact_forces = -0.05
             stumble = -1000.0 * 1.25
             single_foot = 5.0
             #close_to_home = 7.0
@@ -185,7 +188,7 @@ class KBotRoughCfg( LeggedRobotCfg ):
             #ankle_torques = -1e-2
             #ankle_torque_limits = -2e-1
             collision = 0.0
-            joint_power = -2e-4
+            joint_power = -1e-4
             #arms_close_to_zero = 4.0
             #arm_movement = -0.5
             #shoulder_pitch_close = -10.0
