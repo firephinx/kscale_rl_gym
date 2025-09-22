@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<robot name="kd_headless">
+<robot name="assy_forurdf">
   <link name="base">
     <visual name="base_visual">
       <geometry name="base_geometry">
@@ -121,7 +121,7 @@
     <origin xyz="-0.030000 -0.290000 0.000950" rpy="3.141593 0 0"/>
     <parent link="KD_D_401L_L_Shin_Drive"/>
     <child link="LFootBushing_GPF_1517_12"/>
-    <limit effort="17" velocity="37.699" lower="-1.134464" upper="0.261799"/>
+    <limit effort="15" velocity="37.699" lower="-1.134464" upper="0.261799"/>
     <axis xyz="0 0 -1"/>
   </joint>
   <joint name="dof_right_knee_04" type="revolute">
@@ -149,7 +149,7 @@
     <origin xyz="-0.030000 -0.290000 -0.000950" rpy="0 0 0"/>
     <parent link="KD_D_401R"/>
     <child link="RFootBushing_GPF_1517_12"/>
-    <limit effort="17" velocity="37.699" lower="-0.261799" upper="1.134464"/>
+    <limit effort="15" velocity="37.699" lower="-0.261799" upper="1.134464"/>
     <axis xyz="0 0 -1"/>
   </joint>
   <joint name="dof_right_wrist_00" type="revolute">
@@ -177,9 +177,9 @@
       </material>
     </visual>
     <inertial name="KD_D_101L_L_Hip_Static_inertial">
-      <mass value="12.606875"/>
-      <inertia ixx="0.369404" iyy="0.398554" izz="0.058070" ixy="0.000002" ixz="0.000012" iyz="-0.001584"/>
-      <origin xyz="-0.025920 0.003286 0.170540" rpy="0 0 0"/>
+      <mass value="11.824875"/>
+      <inertia ixx="0.367192" iyy="0.395569" izz="0.056774" ixy="0.000002" ixz="0.000012" iyz="-0.001526"/>
+      <origin xyz="-0.025919 0.003348 0.170435" rpy="0 0 0"/>
     </inertial>
   </link>
   <link name="KD_D_102L_L_Hip_Yoke_Drive">
@@ -321,7 +321,7 @@
       </material>
     </visual>
     <inertial name="RS03_inertial_4">
-      <mass value="1.789191"/>
+      <mass value="1.789190"/>
       <inertia ixx="0.007175" iyy="0.001972" izz="0.007602" ixy="0.000599" ixz="0.000012" iyz="-0.000104"/>
       <origin xyz="0.004876 -0.041173 -0.029352" rpy="0 0 0"/>
     </inertial>
@@ -416,10 +416,10 @@
         <color rgba="0.121569 0.121569 0.121569 1"/>
       </material>
     </visual>
-    <collision name="LFootBushing_GPF_1517_12_collision">
+    <collision name="LFootBushing_GPF_1517_12.collision">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry name="LFootBushing_GPF_1517_12_collision_geometry">
-        <mesh filename="meshes/LFootBushing_GPF_1517_12_collision.stl"/>
+        <mesh filename="meshes/LFootBushing_GPF_1517_12.collision.stl"/>
       </geometry>
     </collision>
     <inertial name="LFootBushing_GPF_1517_12_inertial">
@@ -486,10 +486,10 @@
         <color rgba="0.121569 0.121569 0.121569 1"/>
       </material>
     </visual>
-    <collision name="RFootBushing_GPF_1517_12_collision">
+    <collision name="RFootBushing_GPF_1517_12.collision">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry name="RFootBushing_GPF_1517_12_collision_geometry">
-        <mesh filename="meshes/RFootBushing_GPF_1517_12_collision.stl"/>
+        <mesh filename="meshes/RFootBushing_GPF_1517_12.collision.stl"/>
       </geometry>
     </collision>
     <inertial name="RFootBushing_GPF_1517_12_inertial">

@@ -1,14 +1,6 @@
 <mujoco model="assy_forurdf">
   <default>
     <default class="robot">
-      <default class="robstride_03">
-        <joint armature="0.02" frictionloss="0.2" actuatorfrcrange="-60.0 60.0" />
-        <motor ctrlrange="-60.0 60.0" />
-      </default>
-      <default class="robstride_02">
-        <joint armature="0.0042" frictionloss="0.1" actuatorfrcrange="-17.0 17.0" />
-        <motor ctrlrange="-17.0 17.0" />
-      </default>
       <default class="robstride_04">
         <joint armature="0.04" frictionloss="0.2" actuatorfrcrange="-120.0 120.0" />
         <motor ctrlrange="-120.0 120.0" />
@@ -17,11 +9,19 @@
         <joint armature="0.001" frictionloss="0.1" actuatorfrcrange="-14.0 14.0" />
         <motor ctrlrange="-14.0 14.0" />
       </default>
+      <default class="robstride_03">
+        <joint armature="0.02" frictionloss="0.2" actuatorfrcrange="-60.0 60.0" />
+        <motor ctrlrange="-60.0 60.0" />
+      </default>
+      <default class="robstride_02">
+        <joint armature="0.0042" frictionloss="0.1" actuatorfrcrange="-17.0 17.0" />
+        <motor ctrlrange="-17.0 17.0" />
+      </default>
       <default class="visual">
         <geom material="visualgeom" contype="0" conaffinity="0" group="2" />
       </default>
       <default class="collision">
-        <geom material="collision_material" condim="3" contype="0" conaffinity="1" priority="1" group="1" solref="0.02 0.8" solimp="0.9 0.95 0.001" friction="0.64 0.02 0.01" />
+        <geom material="collision_material" condim="3" contype="0" conaffinity="1" priority="1" group="1" solref="0.02 0.8" solimp="0.99 0.999 1e-05" friction="0.64 0.02 0.01" />
       </default>
     </default>
     <mesh maxhullvert="64" />
@@ -40,13 +40,13 @@
     <mesh name="L_Hip_Roll_RS03.stl" file="meshes/L_Hip_Roll_RS03.stl" />
     <mesh name="KD_D_301L_L_Femur_Lower_Drive.stl" file="meshes/KD_D_301L_L_Femur_Lower_Drive.stl" />
     <mesh name="KD_D_401L_L_Shin_Drive.stl" file="meshes/KD_D_401L_L_Shin_Drive.stl" />
-    <mesh name="LFootBushing_GPF_1517_12_collision.stl" file="meshes/LFootBushing_GPF_1517_12_collision.stl" />
+    <mesh name="LFootBushing_GPF_1517_12.collision.stl" file="meshes/LFootBushing_GPF_1517_12.collision.stl" />
     <mesh name="LFootBushing_GPF_1517_12.stl" file="meshes/LFootBushing_GPF_1517_12.stl" />
     <mesh name="KD_D_102R.stl" file="meshes/KD_D_102R.stl" />
     <mesh name="L_Hip_Roll_RS03_2.stl" file="meshes/L_Hip_Roll_RS03_2.stl" />
     <mesh name="KD_D_301R.stl" file="meshes/KD_D_301R.stl" />
     <mesh name="KD_D_401R.stl" file="meshes/KD_D_401R.stl" />
-    <mesh name="RFootBushing_GPF_1517_12_collision.stl" file="meshes/RFootBushing_GPF_1517_12_collision.stl" />
+    <mesh name="RFootBushing_GPF_1517_12.collision.stl" file="meshes/RFootBushing_GPF_1517_12.collision.stl" />
     <mesh name="RFootBushing_GPF_1517_12.stl" file="meshes/RFootBushing_GPF_1517_12.stl" />
     <mesh name="KC_C_101R_ShldYokeDrive.stl" file="meshes/KC_C_101R_ShldYokeDrive.stl" />
     <mesh name="RS03_3.stl" file="meshes/RS03_3.stl" />
@@ -66,7 +66,7 @@
       <freejoint name="floating_base" />
       <geom name="base_visual" pos="0 0.035 0" quat="0.7071054825112363 0.0 0.0 0.7071080798594735" material="base_material" type="sphere" size="0.01" class="visual" />
       <body name="KD_D_101L_L_Hip_Static" pos="0 0.035 0" quat="0.7071054825112363 0.0 0.0 0.7071080798594735">
-        <inertial pos="-0.025920 0.003286 0.170540" quat="1.0 0.0 0.0 0.0" mass="12.606875" diaginertia="0.369404 0.398554 0.05807" />
+        <inertial pos="-0.025919 0.003348 0.170435" quat="1.0 0.0 0.0 0.0" mass="11.824875" diaginertia="0.367192 0.395569 0.056774" />
         <geom name="KD_D_101L_L_Hip_Static_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="KD_D_101L_L_Hip_Static_material" type="mesh" mesh="KD_D_101L_L_Hip_Static.stl" class="visual" />
         <body name="KD_D_102L_L_Hip_Yoke_Drive" pos="0.030112 0.000852 -0.027644" quat="0.5000001633974483 -0.4999999999999733 -0.49999983660255165 0.4999999999999733">
           <joint name="dof_left_hip_pitch_04" type="hinge" ref="0.0" class="robstride_04" range="-1.047198 2.216568" axis="0 0 1" />
@@ -88,10 +88,10 @@
                   <joint name="dof_left_ankle_02" type="hinge" ref="0.0" class="robstride_02" range="-1.134464 0.261799" axis="0 0 -1" />
                   <inertial pos="-0.016549 0.031142 -0.012943" quat="1.0 0.0 0.0 0.0" mass="0.608966" diaginertia="0.000377 0.00194 0.001893" />
                   <geom name="LFootBushing_GPF_1517_12_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="KD_D_101L_L_Hip_Static_material" type="mesh" mesh="LFootBushing_GPF_1517_12.stl" class="visual" />
-                  <geom name="LFootBushing_GPF_1517_12_collision_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.107970 0.038000 -0.030814 0.056360 0.038000 -0.030814" size="0.020000 0.104686" material="collision_material" class="collision" />
-                  <geom name="LFootBushing_GPF_1517_12_visual_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.107970 0.038000 -0.030814 0.056360 0.038000 -0.030814" size="0.020000 0.104686" material="KD_D_101L_L_Hip_Static_material" class="visual" />
-                  <geom name="LFootBushing_GPF_1517_12_collision_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.113013 0.038000 0.000954 0.056360 0.038000 0.000954" size="0.020000 0.104686" material="collision_material" class="collision" />
-                  <geom name="LFootBushing_GPF_1517_12_visual_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.113013 0.038000 0.000954 0.056360 0.038000 0.000954" size="0.020000 0.104686" material="KD_D_101L_L_Hip_Static_material" class="visual" />
+                  <geom name="LFootBushing_GPF_1517_12_collision_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.107970 0.038000 -0.030814 0.056360 0.038000 -0.030814" size="0.020000 0.104813" material="collision_material" class="collision" />
+                  <geom name="LFootBushing_GPF_1517_12_visual_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.107970 0.038000 -0.030814 0.056360 0.038000 -0.030814" size="0.020000 0.104813" material="KD_D_101L_L_Hip_Static_material" class="visual" />
+                  <geom name="LFootBushing_GPF_1517_12_collision_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.113266 0.038000 0.000954 0.056360 0.038000 0.000954" size="0.020000 0.104813" material="collision_material" class="collision" />
+                  <geom name="LFootBushing_GPF_1517_12_visual_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.113266 0.038000 0.000954 0.056360 0.038000 0.000954" size="0.020000 0.104813" material="KD_D_101L_L_Hip_Static_material" class="visual" />
                   <site name="left_foot" size="0.105 0.02 0.036" pos="-0.0283 0.038 -0.014" type="box" />
                 </body>
               </body>
@@ -118,8 +118,8 @@
                   <joint name="dof_right_ankle_02" type="hinge" ref="0.0" class="robstride_02" range="-0.261799 1.134464" axis="0 0 -1" />
                   <inertial pos="-0.016546 -0.031136 -0.012942" quat="1.0 0.0 0.0 0.0" mass="0.608742" diaginertia="0.000377 0.001939 0.001892" />
                   <geom name="RFootBushing_GPF_1517_12_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="KD_D_101L_L_Hip_Static_material" type="mesh" mesh="RFootBushing_GPF_1517_12.stl" class="visual" />
-                  <geom name="RFootBushing_GPF_1517_12_collision_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.102246 -0.038000 -0.030886 0.056821 -0.038000 -0.030886" size="0.020000 0.105464" material="collision_material" class="collision" />
-                  <geom name="RFootBushing_GPF_1517_12_visual_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.102246 -0.038000 -0.030886 0.056821 -0.038000 -0.030886" size="0.020000 0.105464" material="KD_D_101L_L_Hip_Static_material" class="visual" />
+                  <geom name="RFootBushing_GPF_1517_12_collision_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.102246 -0.038000 -0.030735 0.056821 -0.038000 -0.030735" size="0.020000 0.105464" material="collision_material" class="collision" />
+                  <geom name="RFootBushing_GPF_1517_12_visual_capsule_0" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.102246 -0.038000 -0.030735 0.056821 -0.038000 -0.030735" size="0.020000 0.105464" material="KD_D_101L_L_Hip_Static_material" class="visual" />
                   <geom name="RFootBushing_GPF_1517_12_collision_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.114107 -0.038000 0.000954 0.056821 -0.038000 0.000954" size="0.020000 0.105464" material="collision_material" class="collision" />
                   <geom name="RFootBushing_GPF_1517_12_visual_capsule_1" type="capsule" quat="1.000000 0.000000 0.000000 0.000000" fromto="-0.114107 -0.038000 0.000954 0.056821 -0.038000 0.000954" size="0.020000 0.105464" material="KD_D_101L_L_Hip_Static_material" class="visual" />
                   <site name="right_foot" size="0.105 0.02 0.036" pos="-0.0283 -0.038 -0.014" type="box" />
@@ -159,7 +159,7 @@
           <geom name="KD_C_101L_ShldYokeDrive_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="KD_D_101L_L_Hip_Static_material" type="mesh" mesh="KD_C_101L_ShldYokeDrive.stl" class="visual" />
           <body name="RS03_4" pos="0 -0.024250 0.080000" quat="0.5000001633974483 0.4999999999999733 -0.4999999999999733 0.49999983660255165">
             <joint name="dof_left_shoulder_roll_03" type="hinge" ref="0.0" class="robstride_03" range="-0.436332 1.658063" axis="0 0 1" />
-            <inertial pos="0.004876 -0.041173 -0.029352" quat="1.0 0.0 0.0 0.0" mass="1.789191" diaginertia="0.007175 0.001972 0.007602" />
+            <inertial pos="0.004876 -0.041173 -0.029352" quat="1.0 0.0 0.0 0.0" mass="1.789190" diaginertia="0.007175 0.001972 0.007602" />
             <geom name="RS03_4_visual" pos="0 0 0" quat="1.0 0.0 0.0 0.0" material="KD_D_101L_L_Hip_Static_material" type="mesh" mesh="RS03_4.stl" class="visual" />
             <body name="KD_C_301L_LowerBicepDrive" pos="0.013000 -0.142500 -0.030750" quat="0.7071068967259818 -0.7071066656470943 0.0 0.0">
               <joint name="dof_left_shoulder_yaw_02" type="hinge" ref="0.0" class="robstride_02" range="-1.671886 1.671886" axis="0 0 1" />
@@ -184,7 +184,7 @@
           <site name="imu_site" quat="1.0 0.0 0.0 0.0" pos="0.0 0.0 0.0" />
         </body>
       </body>
-      <site name="base_site" pos="0.00000000 0.01000000 0.00000000" quat="1 0 0 0" />
+      <site name="base_site" pos="0 0 0" quat="1 0 0 0" />
       <camera name="front_camera" mode="track" fovy="90.0" quat="4.329780281177467e-17 4.329780281177466e-17 0.7071067811865475 0.7071067811865476" pos="0.0 2.0 0.5" />
       <camera name="side_camera" mode="track" fovy="90.0" quat="-0.5 -0.4999999999999999 0.5 0.5000000000000001" pos="-2.0 0.0 0.5" />
     </body>

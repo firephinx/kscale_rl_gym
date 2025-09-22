@@ -61,29 +61,6 @@ class TorchPolicyExporter(torch.nn.Module):
                 self.rnn_type = "lstm"
                 self.forward = self._forward_lstm
                 self.hidden_states = torch.zeros((2,self.num_layers,self.hidden_size))
-                # self.hidden_states[0] = torch.tensor([2.3893e-02, -4.0182e-02, -1.6300e-01, -3.2848e-01, -8.9247e-02,
-                #                             1.4373e-01, -8.0895e-02,  2.8819e-01, -6.0057e-02,  6.3056e-02,
-                #                             -7.3454e-02, -2.3794e-01, -1.8860e-01, -5.7388e-03,  6.1775e-02,
-                #                             2.9514e-02, -1.6111e-01,  1.5486e-02,  3.0160e-02, -3.6248e-02,
-                #                             2.8146e-01, -2.4034e-01, -4.1731e-02, -2.3256e-04,  6.4057e-03,
-                #                             -8.4956e-03,  2.0735e-01, -1.7650e-01, -1.3972e-01,  6.6886e-02,
-                #                             -7.9494e-03, -3.4614e-01,  3.5153e-02,  4.1123e-02,  5.9506e-02,
-                #                             1.0999e-01, -3.1818e-02, -1.0418e-01,  1.0993e-01, -3.5744e-01,
-                #                             1.1790e-01,  1.5177e-01, -2.1752e-01, -7.5067e-01,  8.7959e-03,
-                #                             -1.5438e-02, -2.4331e-02, -2.0172e-01, -1.1457e-02, -3.0508e-01,
-                #                             2.0681e-03, -2.1112e-02,  2.6977e-01,  5.3435e-04,  7.5013e-03,
-                #                             -8.7089e-02, -2.3484e-02, -1.2148e-01, -1.7802e-01, -6.0415e-02,
-                #                             -1.0382e-01,  1.4228e-01,  2.5448e-03, -2.2938e-01])
-                # self.hidden_states[1] = torch.tensor([ 0.0468, -0.2663, -0.2357, -0.7179, -0.0922,  0.5611, -0.4141,
-                #                         2.2420, -0.6473,  0.1081, -1.7467, -0.3339, -0.7897, -0.1322,
-                #                         0.4681,  0.0299, -0.5360,  0.1398,  1.1115, -0.9258,  0.5465,
-                #                         -0.3131, -0.0929, -0.0044,  0.0344, -0.1050,  0.4760, -0.2022,
-                #                         -0.3294,  0.9172, -0.1460, -0.6849,  0.0444,  0.0560,  0.6731,
-                #                         0.1416, -0.2029, -0.6703,  0.7823, -0.6525,  0.2251,  0.1541,
-                #                         -0.6548, -2.3410,  0.6449, -0.0830, -0.2681, -0.6403, -0.3193,
-                #                         -0.6908,  0.0307, -0.0229,  0.2918,  0.5726,  0.7040, -0.0915,
-                #                         -0.4894, -0.1332, -0.5981, -0.3617, -0.4222,  0.3750,  0.0777,
-                #                         -0.2395])
             else:
                 raise NotImplementedError(f"Unsupported RNN type: {rnn_name}")
                 
@@ -246,13 +223,13 @@ for p in exporter.parameters():
 
 ts_policy = exporter
 
-amg = ArmMotionGenerator()
+# amg = ArmMotionGenerator()
 
-amg.to("cpu").eval()
-for p in amg.parameters():
-    p.requires_grad_(False)
+# amg.to("cpu").eval()
+# for p in amg.parameters():
+#     p.requires_grad_(False)
 
-arm_policy = amg
+# arm_policy = amg
 
 joint_names = ['dof_left_hip_pitch_04',
                 'dof_left_hip_roll_03',
@@ -277,25 +254,25 @@ joint_names = ['dof_left_hip_pitch_04',
 
 _INIT_JOINT_POS = torch.tensor(
         [
-            math.radians(10.0),  # dof_left_hip_pitch_04
+            math.radians(20.0),  # dof_left_hip_pitch_04
             0.0,  # dof_left_hip_roll_03
             0.0,  # dof_left_hip_yaw_03
-            math.radians(30.0),  # dof_left_knee_04
-            math.radians(-20.0),  # dof_left_ankle_02
+            math.radians(50.0),  # dof_left_knee_04
+            math.radians(-30.0),  # dof_left_ankle_02
             0.0,  # dof_left_shoulder_pitch_03
             math.radians(10.0),  # dof_left_shoulder_roll_03
             0.0,  # dof_left_shoulder_yaw_02
-            math.radians(-20.0),  # dof_left_elbow_02
+            math.radians(-90.0),  # dof_left_elbow_02
             0.0,  # dof_left_wrist_00
-            math.radians(-10.0),  # dof_right_hip_pitch_04
+            math.radians(-20.0),  # dof_right_hip_pitch_04
             0.0,  # dof_right_hip_roll_03
             0.0,  # dof_right_hip_yaw_03
-            math.radians(-30.0),  # dof_right_knee_04
-            math.radians(20.0),  # dof_right_ankle_02
+            math.radians(-50.0),  # dof_right_knee_04
+            math.radians(30.0),  # dof_right_ankle_02
             0.0,  # dof_right_shoulder_pitch_03
             math.radians(-10.0),  # dof_right_shoulder_roll_03
             0.0,  # dof_right_shoulder_yaw_02
-            math.radians(20.0),  # dof_right_elbow_02
+            math.radians(90.0),  # dof_right_elbow_02
             0.0,  # dof_right_wrist_00
             # 0.0,  # dof_left_hip_pitch_04
             # 0.0,  # dof_left_hip_roll_03
@@ -344,15 +321,15 @@ _JOINT_LIMITS = torch.tensor(
     )
 
 NUM_JOINTS = len(joint_names)
-NUM_COMMANDS = 3
-NUM_ACTIONS = 10
+NUM_COMMANDS = 16
+NUM_ACTIONS = 20
 
 # Get carry shape from the exporter
-CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS+1)
+CARRY_SHAPE = exporter.get_carry_shape(NUM_ACTIONS)
 
 ACTION_SCALE = 0.25
 
-cmd_scale = torch.tensor([2.0, 2.0, 0.25])
+cmd_scale = torch.tensor([2.0, 2.0, 0.25, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
 dof_pos_scale = 1.0
 dof_vel_scale = 0.05
 ang_vel_scale = 0.25
@@ -377,7 +354,7 @@ def construct_obs_rnn(
             scaled_command,
             offset_joint_angles,
             scaled_joint_angular_velocities,
-            carry[:10]
+            carry
         ),
         dim=-1,
     )
@@ -415,27 +392,36 @@ def _step_fn(
 
     actions, new_carry = ts_policy(obs, carry)
 
-    arm_motions = arm_policy(command, carry[10])
+    #arm_motions = arm_policy(command, carry[10])
     
-    new_carry = torch.cat((new_carry, (carry[10] + 0.05).unsqueeze(0)))
+    #new_carry = torch.cat((new_carry, (carry[10] + 0.05).unsqueeze(0)))
 
-    clamped_actions = torch.cat(
-        (
-            (actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
-            (arm_motions[0] + _INIT_JOINT_POS[5]).unsqueeze(0),
-            (arm_motions[1] + _INIT_JOINT_POS[6]).unsqueeze(0),
-            _INIT_JOINT_POS[7].unsqueeze(0),
-            (arm_motions[2] + _INIT_JOINT_POS[8]).unsqueeze(0),
-            _INIT_JOINT_POS[9].unsqueeze(0),
-            (actions[5:] * ACTION_SCALE) + _INIT_JOINT_POS[10:15],
-            (arm_motions[0] + _INIT_JOINT_POS[15]).unsqueeze(0),
-            (arm_motions[1] + _INIT_JOINT_POS[16]).unsqueeze(0),
-            _INIT_JOINT_POS[17].unsqueeze(0),
-            (arm_motions[2] + _INIT_JOINT_POS[18]).unsqueeze(0),
-            _INIT_JOINT_POS[19].unsqueeze(0),
-        ),
-        dim=-1,
-    )
+    
+
+    clamped_actions = torch.cat(((actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
+                                 (actions[5:10] * ACTION_SCALE) + command[11:16], 
+                                 (actions[10:15] * ACTION_SCALE) + _INIT_JOINT_POS[10:15], 
+                                 (actions[15:] * ACTION_SCALE) + command[6:11]),
+                                 dim=-1)
+    
+    
+    # torch.cat(
+    #     (
+    #         (actions[:5] * ACTION_SCALE) + _INIT_JOINT_POS[:5],
+    #         (arm_motions[0] + _INIT_JOINT_POS[5]).unsqueeze(0),
+    #         (arm_motions[1] + _INIT_JOINT_POS[6]).unsqueeze(0),
+    #         _INIT_JOINT_POS[7].unsqueeze(0),
+    #         (arm_motions[2] + _INIT_JOINT_POS[8]).unsqueeze(0),
+    #         _INIT_JOINT_POS[9].unsqueeze(0),
+    #         (actions[5:] * ACTION_SCALE) + _INIT_JOINT_POS[10:15],
+    #         (arm_motions[0] + _INIT_JOINT_POS[15]).unsqueeze(0),
+    #         (arm_motions[1] + _INIT_JOINT_POS[16]).unsqueeze(0),
+    #         _INIT_JOINT_POS[17].unsqueeze(0),
+    #         (arm_motions[2] + _INIT_JOINT_POS[18]).unsqueeze(0),
+    #         _INIT_JOINT_POS[19].unsqueeze(0),
+    #     ),
+    #     dim=-1,
+    # )
     for i in range(NUM_JOINTS):
         clamped_actions[i] = torch.clamp(clamped_actions[i], _JOINT_LIMITS[i, 0], _JOINT_LIMITS[i, 1])
 

@@ -103,19 +103,19 @@ class LeggedRobotCfg(BaseConfig):
         class scales:
             termination = -0.0
             #tracking_lin_vel = 1.0
-            tracking_ang_vel = 0.5
-            lin_vel_z = -2.0
-            ang_vel_xy = -0.05
-            orientation = -0.
-            torques = -0.00001
-            dof_vel = -0.
-            dof_acc = -2.5e-7
-            base_height = -0. 
-            feet_air_time =  1.0
-            collision = -1.
-            feet_stumble = -0.0 
-            action_rate = -0.01
-            stand_still = -0.
+            #tracking_ang_vel = 0.5
+            #lin_vel_z = -2.0
+            #ang_vel_xy = -0.05
+            #orientation = -0.
+            #torques = -0.00001
+            #dof_vel = -0.
+            #dof_acc = -2.5e-7
+            #base_height = -0. 
+            #feet_air_time =  1.0
+            #collision = -1.
+            #feet_stumble = -0.0 
+            #action_rate = -0.01
+            #stand_still = -0.
 
         only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
         tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
@@ -130,8 +130,11 @@ class LeggedRobotCfg(BaseConfig):
         hip_deviation_loss = 'l1'
         arm_deviation_loss = 'l1'
         smoothness_loss = 'l1'
-        tracking_right_arm_loss = 'l2' # l1 or l2
-        tracking_left_arm_loss = 'l2' # l1 or l2
+        tracking_right_arm_loss = 'l1' # l1 or l2
+        tracking_left_arm_loss = 'l1' # l1 or l2
+        shoulder_roll_deviation_loss = 'l2' # l1 or l2
+        orientation_loss = 'l1' # l1 or l2
+        ang_vel_xy_loss = 'l1' # l1 or l2
 
     class normalization:
         class obs_scales:
