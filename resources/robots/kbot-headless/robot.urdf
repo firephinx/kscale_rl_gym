@@ -121,7 +121,7 @@
     <origin xyz="-0.030000 -0.290000 0.000950" rpy="3.141593 0 0"/>
     <parent link="KD_D_401L_L_Shin_Drive"/>
     <child link="LFootBushing_GPF_1517_12"/>
-    <limit effort="15" velocity="37.699" lower="-1.134464" upper="0.261799"/>
+    <limit effort="17" velocity="37.699" lower="-1.134464" upper="0.261799"/>
     <axis xyz="0 0 -1"/>
   </joint>
   <joint name="dof_right_knee_04" type="revolute">
@@ -149,7 +149,7 @@
     <origin xyz="-0.030000 -0.290000 -0.000950" rpy="0 0 0"/>
     <parent link="KD_D_401R"/>
     <child link="RFootBushing_GPF_1517_12"/>
-    <limit effort="15" velocity="37.699" lower="-0.261799" upper="1.134464"/>
+    <limit effort="17" velocity="37.699" lower="-0.261799" upper="1.134464"/>
     <axis xyz="0 0 -1"/>
   </joint>
   <joint name="dof_right_wrist_00" type="revolute">
